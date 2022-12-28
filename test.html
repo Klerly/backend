@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Google OAuth2 Test</title>
+  </head>
+  <body>
+    <div id="auth-holder">  
+      <a id="auth-link" href="#">Sign in with Google</a>
+    </div>
+    <div id="enter-url-with-code">Enter URL with code
+      <textarea id="url-with-code" rows="1" cols="100"></textarea>
+    </div>
+    <div id="code"></div>
+    <script>
+
+      document.getElementById('auth-holder').style.textAlign = 'center';
+      document.getElementById('auth-holder').style.fontSize = '1em';
+      document.getElementById('auth-holder').style.marginTop = '13em';
+
+      document.getElementById('enter-url-with-code').style.textAlign = 'center';
+      document.getElementById('enter-url-with-code').style.fontSize = '1em';
+      document.getElementById('enter-url-with-code').style.marginTop = '1em';
+      document.getElementById('url-with-code').style.height = '3.5em';
+      document.getElementById('enter-url-with-code').onchange = function() {
+        const urlWithCode = document.getElementById('url-with-code').value;
+        let code = urlWithCode.split('code=')[1];
+        console.log(code,1);
+        code = code.split('&')[0];
+        console.log(code,2);
+        document.getElementById('code').innerHTML = code;
+      };
+
+      document.getElementById('code').style.textAlign = 'center';
+      document.getElementById('code').style.fontSize = '1em';
+      document.getElementById('code').style.marginTop = '13em';
+
+
+
+      const clientId = "1025950492685-3f9v4mtl3o83upjuph575kn55de6ml65.apps.googleusercontent.com";
+      // const redirectUri = 'http://localhost:8080/test.html?login=true';
+      const redirectUri = 'http://localhost:8080?login=true'; 
+      const scope = 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile';
+
+      const authLink = document.getElementById('auth-link');
+      authLink.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
+    </script>
+  </body>
+</html>

@@ -1,7 +1,8 @@
 from .general import (
-    GeneralSignUpAPI, GeneralSignInAPI,
+    GeneralSignUpAPI, GeneralSignInAPI, GeneralSignOutAPI,
     SendVerificationEmailAPI, CheckVerificationEmailTokenAPI,
     SendResetPasswordEmailAPI, CheckResetPasswordEmailTokenAPI,
 
-
     TestAuthenticatedAPI)
+
+from .social import SocialSignInAPI

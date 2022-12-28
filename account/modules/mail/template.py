@@ -1,11 +1,11 @@
 
 from django.conf import settings
 from core.modules.mail import Mail
-from django.contrib.auth.models import User
-from account.models import EmailTokenVerificationModel, ResetPasswordVerificationModel
+from account.models import User
+from account.models import EmailTokenVerificationModel, ResetPasswordTokenVerificationModel
 
 
-class MailT:
+class AccountMailTemplate:
     """ Mail template class
     """
     class ResetPassword(Mail):
@@ -19,7 +19,7 @@ class MailT:
         """
 
         def __init__(self, user: User):
-            token = ResetPasswordVerificationModel.generate_token()
+            token = ResetPasswordTokenVerificationModel.generate_token()
             self.first_name = user.first_name
             self.to = user.email
             self.subject = "Reset your password"
@@ -53,7 +53,7 @@ class MailT:
             super().__init__(self.to, self.subject, self.text, self.html)
 
             # save the token or rewrite the token if it already exists
-            ResetPasswordVerificationModel.objects.update_or_create(
+            ResetPasswordTokenVerificationModel.objects.update_or_create(
                 user=user,
                 defaults={
                     'token': token

@@ -1,33 +1,20 @@
 # import token model from django rest framework
-from rest_framework.authtoken.models import Token
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.conf import settings
 from django.db import models
 import random
 import hashlib
 import string
+import hashlib
 
-TOKEN_EXPIRY_HOURS: int = getattr(settings, 'TOKEN_EXPIRY_HOURS', 1)
-
-
-class TokenProxyModel(Token):
-    """ Token Authentication Proxy Model"""
-    class Meta:
-        proxy = True
-
-    def has_expired(self):
-        return self.created < timezone.now(
-        ) - timezone.timedelta(hours=TOKEN_EXPIRY_HOURS)
-
-    def has_almost_expired(self):
-        return self.created < timezone.now(
-        ) - timezone.timedelta(hours=TOKEN_EXPIRY_HOURS - 1)
+from django.conf import settings
 
 
 class TokenVerificationModel(models.Model):
     """ Token Verification Model
     """
+    VERIFICATION_TOKEN_EXPIRY_HOURS = 3
+
     token = models.CharField(max_length=255, verbose_name=_('Token'))
     created = models.DateTimeField(
         auto_now_add=True, verbose_name=_('Created'))
@@ -38,9 +25,9 @@ class TokenVerificationModel(models.Model):
     def __str__(self):
         return self.token
 
-    def has_expired(self):
+    def __has_expired(self):
         return self.created < timezone.now(
-        ) - timezone.timedelta(hours=TOKEN_EXPIRY_HOURS)
+        ) - timezone.timedelta(hours=self.VERIFICATION_TOKEN_EXPIRY_HOURS)
 
     @classmethod
     def generate_token(cls):
@@ -51,6 +38,13 @@ class TokenVerificationModel(models.Model):
 
     def get_hash(self, _token):
         """ Hash the token using SHA256 """
+        from django.conf import settings
+
+        salt = settings.SECRET_KEY
+        # note: if the secret key is changed,
+        # all the tokens will be invalidated
+        # and new ones will have to be requested
+        _token = _token + salt
         return hashlib.sha256(_token.encode('utf-8')).hexdigest()
 
     def is_valid(self, _token):
@@ -64,7 +58,7 @@ class TokenVerificationModel(models.Model):
                 bool: True if the token is valid, False otherwise
          """
         if self.token == self.get_hash(_token):
-            if not self.has_expired():
+            if not self.__has_expired():
                 return True
         return False
 
@@ -75,6 +69,7 @@ class TokenVerificationModel(models.Model):
 
 
 class EmailTokenVerificationModel(TokenVerificationModel):
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -87,7 +82,8 @@ class EmailTokenVerificationModel(TokenVerificationModel):
         verbose_name_plural = _('Email  verification tokens')
 
 
-class ResetPasswordVerificationModel(TokenVerificationModel):
+class ResetPasswordTokenVerificationModel(TokenVerificationModel):
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

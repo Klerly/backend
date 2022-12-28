@@ -1,23 +1,22 @@
 
 from django.contrib.auth import get_user_model
 from rest_framework import generics, status
-from rest_framework.response import Response
+from core.response import SuccessResponse
 from account.serializers.auth.general import (
     GeneralSignUpSerializer,
     GeneralSignInSerializer,
 )
-from account.models import TokenProxyModel
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from typing import List, Any
-from core.modules.mail.templates import MailT
-from django.contrib.auth.models import User
-from account.models import EmailTokenVerificationModel, ResetPasswordVerificationModel
-# import django request
-from django.http import HttpRequest
+from account.modules.mail.template import AccountMailTemplate
+from account.models import User
+from account.models import EmailTokenVerificationModel, ResetPasswordTokenVerificationModel
+import re
 from django.contrib.auth import password_validation
-from rest_framework.serializers import ValidationError
+from core.exceptions import HttpValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.http import HttpRequest
 
 
 class GeneralSignUpAPI(generics.CreateAPIView):
@@ -29,8 +28,10 @@ class GeneralSignUpAPI(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return SuccessResponse(
+            serializer.data,
+            status=status.HTTP_201_CREATED
+        )
 
 
 class GeneralSignInAPI(generics.CreateAPIView):
@@ -41,20 +42,20 @@ class GeneralSignInAPI(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        try:
-            token = TokenProxyModel.objects.get(user=user)
-            if token.has_almost_expired() or token.has_expired():
-                token.delete()
-                token = TokenProxyModel.objects.create(user=user)
-        except TokenProxyModel.DoesNotExist:
-            token = TokenProxyModel.objects.create(user=user)
+        user: User = serializer.validated_data['user']
+        data = user.login()
+        return SuccessResponse(data)
 
-        token, _ = TokenProxyModel.objects.get_or_create(user=user)
-        return Response({
-            'token': token.key,
-            'is_active': user.is_active
-        }, status=status.HTTP_200_OK)
+
+class GeneralSignOutAPI(APIView):
+    permission_classes: List[Any] = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user: User = request.user
+        user.logout()
+        return SuccessResponse(
+            'You have been logged out successfully'
+        )
 
 
 class SendVerificationEmailAPI(APIView):
@@ -63,21 +64,16 @@ class SendVerificationEmailAPI(APIView):
     def get(self, request, *args, **kwargs):
         email = request.GET.get('email')
         if not email:
-            return Response({'message': 'An email is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return HttpValidationError({'email': ['An email is required']})
         try:
             user: User = get_user_model().objects.get(email=email)  # type: ignore
         except get_user_model().DoesNotExist:
-            raise ValidationError(
-                {'non_field_errors': ['User with this email does not exist']})
+            raise HttpValidationError('User with this email does not exist')
         if user.is_active:
-            raise ValidationError(
-                {'non_field_errors': ['This email is already verified']})
+            raise HttpValidationError('This email is already verified')
 
-        MailT.VerifyEmail(user).send()
-        return Response({
-            'message': 'A verification email has been sent to you. If you can\'t find it, please check your spam folder.'},
-            status=status.HTTP_200_OK
-        )
+        AccountMailTemplate.VerifyEmail(user).send()
+        return SuccessResponse('A verification email has been sent to you. If you can\'t find it, please check your spam folder.')
 
 
 class CheckVerificationEmailTokenAPI(APIView):
@@ -87,36 +83,31 @@ class CheckVerificationEmailTokenAPI(APIView):
         token = request.GET.get('token')
         email = request.GET.get('email')
         if not token or not email:
-            raise ValidationError(
-                {'non_field_errors': ['Token and email are required']})
+            raise HttpValidationError('Token and email are required')
         try:
             user: User = get_user_model().objects.get(email=email)  # type: ignore
         except get_user_model().DoesNotExist:
-            raise ValidationError(
-                {'non_field_errors': ['User with this email does not exist']})
+            raise HttpValidationError('User with this email does not exist')
         if user.is_active:
-            raise ValidationError(
-                {'non_field_errors': ['This email is already verified']})
+            raise HttpValidationError('This email is already verified')
 
         try:
 
             token_obj: EmailTokenVerificationModel = user.email_token_verification  # type: ignore
         except EmailTokenVerificationModel.DoesNotExist:
-            raise ValidationError({'non_field_errors': [
-                                  'The verification token is invalid. Please enter a valid one or request a new one']}
-                                  )
+            raise HttpValidationError(
+                'The token you entered is not valid. Please enter a valid one or request a new one'
+            )
 
         if not token_obj.is_valid(token):  # type: ignore
-            raise ValidationError({'non_field_errors': [
-                                  'The verification token is invalid. Please enter a valid one or request a new one']}
-                                  )
+            raise HttpValidationError(
+                'The token you entered is invalid or may have expired. Please enter a valid one or request a new one'
+            )
 
         token_obj.delete()
-        user.is_active = True
-        user.save()
-        return Response({
-            'message': 'Yay, your account has been verified. Sign in to continue'},
-            status=status.HTTP_200_OK
+        user.activate()
+        return SuccessResponse(
+            'Yay, your account has been verified. Sign in to continue'
         )
 
 
@@ -126,20 +117,26 @@ class SendResetPasswordEmailAPI(APIView):
     def get(self, request, *args, **kwargs):
         email = request.GET.get('email')
         if not email:
-            raise ValidationError(
-                {'non_field_errors': ['An email is required']}
+            raise HttpValidationError(
+                {'email': ['An valid email is required']}
+            )
+
+        email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+        if not re.match(email_regex, email):
+            raise HttpValidationError(
+                {'email': ['An valid email is required']}
             )
 
         try:
             user: User = get_user_model().objects.get(email=email)  # type: ignore
         except get_user_model().DoesNotExist:
-            raise ValidationError(
-                {'non_field_errors': ['Unfortunately, we couldn\'t find a user with this email address']})
+            raise HttpValidationError(
+                'Unfortunately, we couldn\'t find a user with this email address'
+            )
 
-        MailT.ResetPassword(user).send()
-        return Response({
-            'message': 'A reset password email has been sent to you. If you can\'t find it, please make sure to check your spam folder.'},
-            status=status.HTTP_200_OK
+        AccountMailTemplate.ResetPassword(user).send()
+        return SuccessResponse(
+            'A reset password email has been sent to you. If you can\'t find it, please make sure to check your spam folder.'
         )
 
 
@@ -149,55 +146,48 @@ class CheckResetPasswordEmailTokenAPI(APIView):
 
     def get(self, request, *args, **kwargs):
         self.__check(request)
-        return Response({
-            'message': 'Yay, your reset password token is valid. Please proceed to reset your password'},
-            status=status.HTTP_200_OK
+        return SuccessResponse(
+            'Yay, your reset password token is valid. Please proceed to reset your password'
         )
 
     def post(self, request, *args, **kwargs):
         user, token_obj = self.__check(request)
         password = request.data.get('password')
         if not password:
-            raise ValidationError(
-                {'non_field_errors', 'A password is required'})
+            raise HttpValidationError({'password': ['A password is required']})
 
         try:
             password_validation.validate_password(password)
         except DjangoValidationError as e:
-            raise ValidationError({"password": e.messages})
+            raise HttpValidationError({"password": e.messages})
 
         user.set_password(password)
         user.save()
         token_obj.delete()
-        return Response({
-            'message': 'Your password has been reset successfully. Please sign in to continue'},
-            status=status.HTTP_200_OK
+        return SuccessResponse(
+            'Your password has been reset successfully. Please sign in to continue'
         )
 
     def __check(self, request: HttpRequest):
         token = request.GET.get('token')
         email = request.GET.get('email')
         if not token or not email:
-            raise ValidationError('A token and email are required')
+            raise HttpValidationError('A token and email are required')
         try:
             user: User = get_user_model().objects.get(email=email)  # type: ignore
         except get_user_model().DoesNotExist:
-            raise ValidationError({
-                'non_field_errors': ['Unfortunately, we couldn\'t find a user with this email address']
-            })
+            raise HttpValidationError(
+                'Unfortunately, we couldn\'t find a user with this email address'
+            )
         try:
-            token_obj: ResetPasswordVerificationModel = user.reset_password_token_verification  # type: ignore
-        except ResetPasswordVerificationModel.DoesNotExist:
-            raise ValidationError(
-                {'non_field_errors': [
-                    'The reset password token is invalid. Please enter a valid one or request a new one'
-                ]}
+            token_obj: ResetPasswordTokenVerificationModel = user.reset_password_token_verification  # type: ignore
+        except ResetPasswordTokenVerificationModel.DoesNotExist:
+            raise HttpValidationError(
+                'The reset password token is invalid. Please enter a valid one or request a new one'
             )
         if not token_obj.is_valid(token):  # type: ignore
-            raise ValidationError(
-                {'non_field_errors': [
-                    'The reset password token is invalid. Please enter a valid one or request a new one'
-                ]}
+            raise HttpValidationError(
+                'The reset password token is invalid. Please enter a valid one or request a new one'
             )
 
         return user, token_obj
@@ -207,6 +197,4 @@ class TestAuthenticatedAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-
-        return Response({'message': 'Nice'}, status=status.HTTP_200_OK)
-        # return Response({'message': 'You are authenticated'}, status=status.HTTP_200_OK)
+        return SuccessResponse('Nice')

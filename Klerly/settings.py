@@ -108,13 +108,14 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'core.modules.authentication.CustomTokenAuthentication',
+        'account.modules.authentication.CustomTokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ]
 }
 
+AUTH_USER_MODEL = 'account.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -139,8 +140,13 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-TOKEN_EXPIRE_DAYS = 21
 MAILCHIMP_API_KEY = 'md-c03JCDDOlLLIVV0SLBUW4Q'
 DEFAULT_FROM_EMAIL = "lojetokun@qolom.com"
 PASSWORD_RESET_TIMEOUT_HOURS = 24
 TOKEN_EXPIRY_HOURS = 4
+AUTH_TOKEN_EXPIRY_DAYS = 30
+VERIFICATION_TOKEN_EXPIRY_HOURS = 6
+OAUTH_TOKEN_TTL_MINS = 200
+GOOGLE_OAUTH2_CLIENT_ID = "1025950492685-3f9v4mtl3o83upjuph575kn55de6ml65.apps.googleusercontent.com"
+GOOGLE_OAUTH2_CLIENT_SECRET = ''
+GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:8080?login=true'
