@@ -6,7 +6,7 @@ class CustomTokenAuthentication(authentication.TokenAuthentication):
     def get_model(self):
         if self.model is not None:
             return self.model
-        from account.models import TokenAuthenticationProxyModel
+        from account.models.authentication import TokenAuthenticationProxyModel
         return TokenAuthenticationProxyModel
 
     def authenticate_credentials(self, key):
