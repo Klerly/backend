@@ -13,7 +13,7 @@ from django.conf import settings
 class TokenVerificationModel(models.Model):
     """ Token Verification Model
     """
-    VERIFICATION_TOKEN_EXPIRY_HOURS = 3
+    VERIFICATION_TOKEN_EXPIRY_HOURS = settings.VERIFICATION_TOKEN_EXPIRY_HOURS or 3
 
     token = models.CharField(max_length=255, verbose_name=_('Token'))
     created = models.DateTimeField(
@@ -25,7 +25,7 @@ class TokenVerificationModel(models.Model):
     def __str__(self):
         return self.token
 
-    def __has_expired(self):
+    def _has_expired(self):
         return self.created < timezone.now(
         ) - timezone.timedelta(hours=self.VERIFICATION_TOKEN_EXPIRY_HOURS)
 
@@ -58,7 +58,7 @@ class TokenVerificationModel(models.Model):
                 bool: True if the token is valid, False otherwise
          """
         if self.token == self.get_hash(_token):
-            if not self.__has_expired():
+            if not self._has_expired():
                 return True
         return False
 

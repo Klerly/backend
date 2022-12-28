@@ -27,7 +27,7 @@ class SocialSignInAPITestCase(TestCase):
             response = self.client.post(
                 self.url, HTTP_AUTHORIZATION='Google abc123')
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertEqual(response.data, self.user.login())
+            self.assertEqual(response.data, self.user.login())  # type: ignore
 
     def test_post_new_user(self):
         # Test signing up with a new user
@@ -35,7 +35,7 @@ class SocialSignInAPITestCase(TestCase):
             response = self.client.post(
                 self.url, HTTP_AUTHORIZATION='Google abc123')
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-            self.assertEqual(response.data, self.user.login())
+            self.assertEqual(response.data, self.user.login())  # type: ignore
 
     def test_post_invalid_token(self):
         # Test signing in with an invalid token

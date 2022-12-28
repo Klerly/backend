@@ -1,0 +1,3 @@
+from .user import UserModelTestCase
+from .verification import TokenVerificationModelTestCase
+from .authentication import TokenAuthenticationProxyModelTest

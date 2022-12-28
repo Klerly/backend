@@ -1,11 +1,11 @@
-import mailchimp_transactional as MailchimpTransactional
+import mailchimp_transactional
 from mailchimp_transactional.api_client import ApiClientError
 from django.conf import settings
 import logging
 import abc
 
 
-class AbstractMail(metaclass=abc.ABCMeta):
+class AbstractMail(abc.ABC):
     """
     Abstract base class for sending emails using a specific mail API.
     """
@@ -52,7 +52,7 @@ class MailChimp(AbstractMail):
         # Call the parent class constructor
         super().__init__(key)
         # Create a new MailchimpTransactional.Client instance using the API key
-        self.mailchimp = MailchimpTransactional.Client(key)
+        self.mailchimp = mailchimp_transactional.Client(key)
 
     def send(self, to, subject, text, html=None):
         """
@@ -87,7 +87,8 @@ class MailChimp(AbstractMail):
             self.mailchimp.messages.send({"message": message})
             return True
         except ApiClientError as error:
-            logging.error("Mailchimp error:", error.text)
+            if error.text != "test":
+                logging.error("Mailchimp error:", error.text)
             return False
 
 

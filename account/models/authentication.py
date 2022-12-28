@@ -1,12 +1,10 @@
 
 from rest_framework.authtoken.models import Token
-
-
+from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-AUTH_TOKEN_EXPIRY_DAYS = 30
-# AUTH_TOKEN_EXPIRY_DAYS = settings.AUTH_TOKEN_EXPIRY_DAYS or 30
+AUTH_TOKEN_EXPIRY_DAYS = settings.AUTH_TOKEN_EXPIRY_DAYS or 30
 
 
 class TokenAuthenticationProxyModel(Token):

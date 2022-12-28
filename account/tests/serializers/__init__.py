@@ -1,0 +1,1 @@
+from .auth.general import GeneralSignUpSerializerTestCase, GeneralSignInSerializerTestCase
