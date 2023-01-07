@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'account.apps.AccountConfig',
     'core.apps.CoreConfig',
+    'completion.apps.CompletionConfig',
 ]
 
 MIDDLEWARE = [
@@ -148,5 +149,3 @@ AUTH_TOKEN_EXPIRY_DAYS = 30
 VERIFICATION_TOKEN_EXPIRY_HOURS = 6
 OAUTH_TOKEN_TTL_MINS = 200
 GOOGLE_OAUTH2_CLIENT_ID = "1025950492685-3f9v4mtl3o83upjuph575kn55de6ml65.apps.googleusercontent.com"
-GOOGLE_OAUTH2_CLIENT_SECRET = ''
-GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:8080?login=true'
