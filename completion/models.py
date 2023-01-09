@@ -93,4 +93,6 @@ class DocumentModel(BaseModel):
             output=res_text
         )
 
+        # TODO(@lanre): deduct from wallet
+
         return res_text

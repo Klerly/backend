@@ -21,4 +21,5 @@ urlpatterns = [
     path('api-auth', include('rest_framework.urls')),
     path('api/account/', include('account.urls', namespace='account')),
     path('api/completion/', include('completion.urls', namespace='completion')),
+    path('api/wallet/', include('wallet.urls', namespace='wallet')),
 ]

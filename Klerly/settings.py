@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'account.apps.AccountConfig',
     'core.apps.CoreConfig',
     'completion.apps.CompletionConfig',
+    'wallet.apps.WalletConfig',
 ]
 
 MIDDLEWARE = [
