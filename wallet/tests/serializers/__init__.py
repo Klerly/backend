@@ -1,0 +1,2 @@
+from .card import CardSerializerTest
+from .payment import PaymentInitializeSerializerTest, PaymentChargeSerializerTest

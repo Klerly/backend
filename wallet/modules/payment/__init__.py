@@ -16,10 +16,14 @@ class Payment:
     def _add_card(self, data: PaystackResponseType.ChargeResponse):
         if data["channel"] == "card":
             if data["authorization"]["reusable"] is True:
-                CardModel.objects.create(
-                    user=self.user,
-                    data=data["authorization"]
-                )
+                if not CardModel.objects.filter(
+                        user=self.user,
+                        signature=data["authorization"]["signature"]
+                     ).exists():
+                    CardModel.objects.create(
+                        user=self.user,
+                        data=data["authorization"]
+                    )
 
     def _success(self, transaction: TransactionModel, data: PaystackResponseType.ChargeResponse):
         if transaction.status != TransactionModel.Status.SUCCESS:
@@ -40,7 +44,11 @@ class Payment:
             transaction.status = TransactionModel.Status.FAILED
             transaction.save()
 
-        message = data["gateway_response"] or "Payment failed"
+        if "gateway_response" in data:
+            message = data["gateway_response"]
+        else:
+            message = "Payment failed"
+
         return {
             "status": False,
             "message": message
@@ -49,6 +57,8 @@ class Payment:
     @staticmethod
     def validate_integer_amount(amount: int):
         # when testing, ensure that the integer test is called first
+        if type(amount) != int:
+            raise ValueError("Amount must be an integer")
         if amount % 1 != 0:
             raise ValueError("Amount must be an integer")
         if amount < 0:

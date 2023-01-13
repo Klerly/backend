@@ -4,8 +4,7 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from decimal import Decimal
 from account.models import User
-from wallet.modules.payment.paystack import ResponseType
-from wallet.modules.payment import Payment
+from typing import Dict, Any
 
 
 class WalletModel(BaseModel):
@@ -29,10 +28,14 @@ class WalletModel(BaseModel):
         verbose_name_plural = _('Wallets')
 
     def fund(self, amount: int):
+        from wallet.modules.payment import Payment
+
         self.balance += Payment.validate_integer_amount(amount)
         self.save()
 
     def deduct(self, amount: Decimal):
+        from wallet.modules.payment import Payment
+
         self.balance -= Payment.validate_decimal_amount(amount)
         self.save()
 
@@ -129,7 +132,7 @@ class CardModel(BaseModel):
     )
 
     # paystack json field
-    data: ResponseType.ChargeAuthorization = models.JSONField(
+    data: Dict[str, Any] = models.JSONField(
         verbose_name=_('Paystack data'),
         null=True,
         blank=True

@@ -1,1 +1,1 @@
-from .Paystack import Paystack
+from .payment.paystack import Paystack
