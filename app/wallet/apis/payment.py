@@ -11,7 +11,7 @@ class PaymentInitializeAPI(APIView):
     def post(self, request):
         serializer = PaymentInitializeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        amount = serializer.validated_data["amount"]  # type: ignore
+        amount = serializer.data["amount"]  # type: ignore
         data = Payment(request.user).initialize(amount)
 
         return SuccessResponse(data)
@@ -40,7 +40,7 @@ class PaymentChargeAPI(APIView):
     def post(self, request):
         serializer = PaymentChargeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        amount = serializer.validated_data["amount"]  # type: ignore
+        amount = serializer.data["amount"]  # type: ignore
         signature = serializer.validated_data["signature"]  # type: ignore
 
         try:

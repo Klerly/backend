@@ -76,7 +76,7 @@ class DocumentListCreateAPITestCase(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            len(response.data),  # type: ignore
+            len(response.data["results"]),  # type: ignore
             2
         )
 

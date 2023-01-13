@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-a%=8ll!vp0z-=xsa2@^)^&0ii1)h$w&@dihlgbew=#h*!+i6+*'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ["*"]
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 
 # Application definition
@@ -78,17 +74,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Klerly.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
@@ -114,7 +99,10 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ]
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 20
+
 }
 
 AUTH_USER_MODEL = 'account.User'
@@ -142,11 +130,16 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-MAILCHIMP_API_KEY = 'md-c03JCDDOlLLIVV0SLBUW4Q'
-DEFAULT_FROM_EMAIL = "lojetokun@qolom.com"
+MAILCHIMP_API_KEY = os.getenv('MAILCHIMP_API_KEY')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 PASSWORD_RESET_TIMEOUT_HOURS = 24
 TOKEN_EXPIRY_HOURS = 4
 AUTH_TOKEN_EXPIRY_DAYS = 30
 VERIFICATION_TOKEN_EXPIRY_HOURS = 6
 OAUTH_TOKEN_TTL_MINS = 200
-GOOGLE_OAUTH2_CLIENT_ID = "1025950492685-3f9v4mtl3o83upjuph575kn55de6ml65.apps.googleusercontent.com"
+GOOGLE_OAUTH2_CLIENT_ID = os.getenv('GOOGLE_OAUTH2_CLIENT_ID')
+GOOGLE_OAUTH2_CLIENT_SECRET = os.getenv('GOOGLE_OAUTH2_CLIENT_SECRET')
+GOOGLE_OAUTH2_REDIRECT_URI = os.getenv('GOOGLE_OAUTH2_REDIRECT_URI')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+PAYSTACK_SECRET_KEY = os.getenv('PAYSTACK_SECRET_KEY')
+PAYSTACK_CALLBACK_URL = os.getenv('PAYSTACK_CALLBACK_URL')
