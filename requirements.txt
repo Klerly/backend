@@ -7,6 +7,7 @@ charset-normalizer==2.1.1
 cryptocode==0.1
 cryptography==38.0.4
 Django==4.1.4
+django-cors-headers==3.13.0
 django-filter==22.1
 djangorestframework==3.14.0
 et-xmlfile==1.1.0
