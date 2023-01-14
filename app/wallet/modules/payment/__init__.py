@@ -102,3 +102,6 @@ class Payment:
             return self._success(transaction, data)
         else:
             return self._failed(transaction, data)
+
+    def success(self, transaction: TransactionModel, data: PaystackResponseType.ChargeResponse):
+        return self._success(transaction, data)
