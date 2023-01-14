@@ -1,7 +1,9 @@
 from .base import *
 DEBUG = True
+SECRET_KEY = 'test'
 
 ALLOWED_HOSTS = ['*']
+
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
