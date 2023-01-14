@@ -1,8 +1,7 @@
 from django.test import TestCase
-from unittest.mock import MagicMock, patch
-from paystackapi.transaction import Transaction as T
+from unittest.mock import patch
 from account.models import User
-from wallet.modules.payment.paystack import Paystack, ResponseType
+from wallet.modules.payment.paystack import Paystack
 from django.conf import settings
 
 
