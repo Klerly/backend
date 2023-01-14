@@ -51,6 +51,3 @@ class PaymentChargeSerializerTest(TestCase):
             mocked_validate.assert_called_with(
                 float(invalid_data['amount'])
             )
-
-    def test_fail(self):
-        assert 1 == 0
