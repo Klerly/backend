@@ -66,6 +66,7 @@ class GoogleProvider(AbstractSocialProvider):
             "google_id": decoded_token.get("sub"),
             "email": decoded_token.get("email"),
             "is_active": decoded_token.get("email_verified"),
+            "is_verified": decoded_token.get("email_verified"),
             "first_name": decoded_token.get("given_name", ""),
             "last_name": decoded_token.get("family_name", ""),
         }
@@ -83,8 +84,8 @@ class GoogleProvider(AbstractSocialProvider):
                 # should never happen
                 raise AuthorizationError("Invalid google Id")
 
-            if not existing_user.is_active:
-                existing_user.activate()
+            if not existing_user.is_verified:
+                existing_user.verify()
             user = existing_user
 
         except User.DoesNotExist:
@@ -95,7 +96,8 @@ class GoogleProvider(AbstractSocialProvider):
                 google_id=user.google_id,
                 first_name=user.first_name,
                 last_name=user.last_name,
-                is_active=user.is_active
+                is_active=user.is_active,
+                is_verified=user.is_verified,
             )
             created = True
 

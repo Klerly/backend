@@ -10,7 +10,10 @@ class WalletBalanceAPITestCase(TestCase):
         self.client = APIClient()
         self.url = reverse('wallet:balance')
         self.user = User.objects.create_user(  # type: ignore
-            username='testuser', password='password')
+            username='testuser', password='password',
+            is_verified=True
+
+        )
         self.wallet = WalletModel.objects.create(
             balance=1000.00, user=self.user)
 

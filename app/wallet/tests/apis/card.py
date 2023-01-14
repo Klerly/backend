@@ -21,7 +21,10 @@ class CardListAPITestCase(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.user = User.objects.create_user(  # type: ignore
-            username='testuser', password='password')  # type: ignore
+            username='testuser',
+            password='password',
+            is_verified=True
+        )  # type: ignore
         self.client = APIClient()
         self.wallet = WalletModel.objects.create(user=self.user)
         self.card1 = CardModel.objects.create(
@@ -76,7 +79,10 @@ class CardRetrieveUpdateDestroyAPITestCase(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.user = User.objects.create_user(  # type: ignore
-            username='testuser', password='password')  # type: ignore
+            username='testuser',
+            password='password',
+            is_verified=True
+        )  # type: ignore
         self.client = APIClient()
         self.wallet = WalletModel.objects.create(user=self.user)
         self.card1 = CardModel.objects.create(

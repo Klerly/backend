@@ -18,7 +18,9 @@ class DocumentListCreateAPITestCase(TestCase):
         self.user = User.objects.create_user(  # type: ignore
             username='test@example.com',
             email='test@example.com',
-            password='testpass'
+            password='testpass',
+            is_verified=True
+
         )
         self.client.force_authenticate(user=self.user)
         self.url = reverse('completion:document-list')
@@ -93,7 +95,8 @@ class DocumentRetrieveUpdateDestroyAPITestCase(TestCase):
         self.user = User.objects.create_user(  # type: ignore
             username='test@example.com',
             email='test@example.com',
-            password='testpass'
+            password='testpass',
+            is_verified=True
         )
         self.client.force_authenticate(user=self.user)
         self.url = reverse('completion:document-retrieve',

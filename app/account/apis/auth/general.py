@@ -17,6 +17,7 @@ from django.contrib.auth import password_validation
 from core.exceptions import HttpValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import HttpRequest
+from rest_framework.permissions import IsAuthenticated
 
 
 class GeneralSignUpAPI(generics.CreateAPIView):
@@ -27,9 +28,10 @@ class GeneralSignUpAPI(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        user: User = serializer.save()
+        data = user.login()
         return SuccessResponse(
-            serializer.data,
+            data,
             status=status.HTTP_201_CREATED
         )
 
@@ -48,6 +50,7 @@ class GeneralSignInAPI(generics.CreateAPIView):
 
 
 class GeneralSignOutAPI(APIView):
+    permission_classes: List[Any] = [IsAuthenticated]
     def post(self, request, *args, **kwargs):
         user: User = request.user
         user.logout()
@@ -57,50 +60,27 @@ class GeneralSignOutAPI(APIView):
 
 
 class SendVerificationEmailAPI(APIView):
-    permission_classes: List[Any] = []
-
+    permission_classes: List[Any] = [IsAuthenticated]
     def get(self, request, *args, **kwargs):
-        email = request.GET.get('email')
-        if not email:
-            raise HttpValidationError({
-                'email': 'User with this email does not exist'
-            })
-        try:
-            user: User = get_user_model().objects.get(email=email)  # type: ignore
-        except get_user_model().DoesNotExist:
-            raise HttpValidationError({
-                'email': 'User with this email does not exist'
-            })
-        if user.is_active:
-            raise HttpValidationError({
-                'email':'This email is already verified'
-                })
+        user: User = request.user
+        if user.is_verified:
+            raise HttpValidationError("This account is already verified")
 
         AccountMailTemplate.VerifyEmail(user).send()
         return SuccessResponse('A verification email has been sent to you. If you can\'t find it, please check your spam folder.')
 
 
 class CheckVerificationEmailTokenAPI(APIView):
-    permission_classes: List[Any] = []
-
+    permission_classes: List[Any] = [IsAuthenticated]
     def get(self, request, *args, **kwargs):
         token = request.GET.get('token')
-        email = request.GET.get('email')
-        if not token or not email:
-            raise HttpValidationError('Token and email are required')
-        try:
-            user: User = get_user_model().objects.get(email=email)  # type: ignore
-        except get_user_model().DoesNotExist:
-            raise HttpValidationError({
-                'email': 'User with this email does not exist'
-            })
-        if user.is_active:
-            raise HttpValidationError({
-                'email': 'This email is already verified'
-            })
+        if not token:
+            raise HttpValidationError('Token is required')
 
+        user: User = request.user
+        if user.is_verified:
+            raise HttpValidationError("This account is already verified")
         try:
-
             token_obj: EmailTokenVerificationModel = user.email_token_verification  # type: ignore
         except EmailTokenVerificationModel.DoesNotExist:
             raise HttpValidationError(
@@ -113,7 +93,7 @@ class CheckVerificationEmailTokenAPI(APIView):
             )
 
         token_obj.delete()
-        user.activate()
+        user.verify()
         return SuccessResponse(
             'Yay, your account has been verified. Sign in to continue'
         )
@@ -139,8 +119,8 @@ class SendResetPasswordEmailAPI(APIView):
             user: User = get_user_model().objects.get(email=email)  # type: ignore
         except get_user_model().DoesNotExist:
             raise HttpValidationError({
-                'email':'Unfortunately, we couldn\'t find a user with this email address'
-                })
+                'email': 'Unfortunately, we couldn\'t find a user with this email address'
+            })
 
         AccountMailTemplate.ResetPassword(user).send()
         return SuccessResponse(
@@ -199,10 +179,3 @@ class CheckResetPasswordEmailTokenAPI(APIView):
             )
 
         return user, token_obj
-
-
-class TestAuthenticatedAPI(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        return SuccessResponse('Nice')

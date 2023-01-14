@@ -14,6 +14,7 @@ class SocialSignInAPITestCase(TestCase):
             "google_id": "12345",
             "email": "test@example.com",
             "is_active": True,
+            "is_verified": False,
             "first_name": "John",
             "last_name": "Doe",
         }

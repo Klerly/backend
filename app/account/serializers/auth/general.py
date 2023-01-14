@@ -31,9 +31,9 @@ class GeneralSignUpSerializer(serializers.Serializer):
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
             password=validated_data['password'],
-            is_active=False
+            is_active=True
         )
-        return UserSerializer(user).data
+        return user
 
 
 class GeneralSignInSerializer(serializers.Serializer):

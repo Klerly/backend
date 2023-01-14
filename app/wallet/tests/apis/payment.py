@@ -16,7 +16,10 @@ class PaymentInitializeAPITestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(  # type: ignore
-            username='testuser', password='password')
+            username='testuser',
+            password='password',
+            is_verified=True
+        )
         self.wallet = WalletModel.objects.create(user=self.user)
         self.url = reverse('wallet:payment-initialize')
         self.data = {'amount': 100}
@@ -48,7 +51,10 @@ class PaymentVerifyAPITestCase(TestCase):
         self.factory = RequestFactory()
         self.client = APIClient()
         self.user = User.objects.create_user(  # type: ignore
-            username='testuser', password='password')
+            username='testuser',
+            password='password',
+            is_verified=True
+        )
         self.wallet = WalletModel.objects.create(user=self.user)
         self.transaction = TransactionModel.objects.create(
             user=self.user,
@@ -113,7 +119,9 @@ class PaymentChargeAPITestCase(TestCase):
         self.factory = RequestFactory()
         self.client = APIClient()
         self.user = User.objects.create_user(  # type: ignore
-            username='testuser', password='password')
+            username='testuser', password='password',
+            is_verified=True
+        )
         self.wallet = WalletModel.objects.create(user=self.user, balance=1000)
         self.card = CardModel.objects.create(
             user=self.user,
