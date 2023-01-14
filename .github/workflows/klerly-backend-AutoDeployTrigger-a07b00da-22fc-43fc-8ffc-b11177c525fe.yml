@@ -40,6 +40,14 @@ jobs:
           context: ./
 
 
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Run tests
+        run: sh test.sh
+
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
