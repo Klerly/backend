@@ -46,10 +46,6 @@ jobs:
           file: ./Dockerfile
           context: ./
 
-
-  
-
-
   deploy:
     runs-on: ubuntu-latest
     needs: build
