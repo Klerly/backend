@@ -14,35 +14,10 @@ on:
   workflow_dispatch:      
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout to the branch
-        uses: actions/checkout@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Log in to container registry
-        uses: docker/login-action@v1
-        with:
-          registry: docker.io
-          username: ${{ secrets.KLERLYBACKEND_REGISTRY_USERNAME }}
-          password: ${{ secrets.KLERLYBACKEND_REGISTRY_PASSWORD }}
-
-      - name: Build and push container image to registry
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          tags: ojetokun/klerly-backend:${{ github.sha }}
-          file: ./Dockerfile
-          context: ./
-
-
   test:
     runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Run tests
-        run: find / -type f -name test.py
+    steps:  
+       - uses: actions/checkout@v2  
+       - uses: actions/setup-python@v2  
+       - run: pip install -r requirements.txt  
+       - run: cd app && python manage.py test --settings=Klerly.settings.test --parallel
