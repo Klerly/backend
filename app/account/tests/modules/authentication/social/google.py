@@ -56,15 +56,16 @@ class GoogleProviderTestCase(TestCase):
         self.assertFalse(created)
         self.assertEqual(returned_user.google_id, google_id)
 
-    def test_get_or_create_user_activates_inactive_accounts(self):
-        # Test that inactive accounts are activated
-        self.user_data["is_active"] = False
+    def test_get_or_create_user_verifies_unverified_account(self):
+        # Test that the method verifies
+        # the user if the user is not verified
+        self.user_data["is_verified"] = False
         user = User.objects.create_user(**self.user_data)  # type: ignore
 
         provider = GoogleProvider('abc123')
         returned_user, created = provider._get_or_create_user(user)
         self.assertFalse(created)
-        self.assertTrue(returned_user.is_active)
+        self.assertTrue(returned_user.is_verified)
 
     def test_get_or_create_user_returns_new_user(self):
         # Test that the method returns a new user

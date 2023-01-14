@@ -15,9 +15,14 @@ class User(AbstractUser):
         verbose_name=_('Google ID')
     )
 
-    def activate(self):
-        """ Activate user """
-        self.is_active = True
+    is_verified = models.BooleanField(
+        default=False,
+        verbose_name=_('Is Verified')
+    )
+
+    def verify(self):
+        """ verify a user """
+        self.is_verified = True
         self.save()
         return
 
@@ -27,7 +32,7 @@ class User(AbstractUser):
             Returns:
                 dict: {
                     'token': str, 
-                    'is_active': bool
+                    'is_verified': bool
                 }
         """
         try:
@@ -42,7 +47,7 @@ class User(AbstractUser):
         self.save()
         return {
             "token": token.key,
-            "is_active": self.is_active
+            "is_verified": self.is_verified,
         }
 
     def logout(self):

@@ -11,7 +11,10 @@ class TransactionListAPITestCase(TestCase):
         self.factory = APIRequestFactory()
         self.client = APIClient()
         self.user = User.objects.create_user(  # type: ignore
-            username='testuser', password='password'
+            username='testuser',
+            password='password',
+            is_verified=True
+
         )
         self.client.force_authenticate(user=self.user)
         self.transaction1 = TransactionModel.objects.create(
@@ -58,7 +61,10 @@ class TransactionRetrieveAPITestCase(TestCase):
         self.factory = APIRequestFactory()
         self.client = APIClient()
         self.user = User.objects.create_user(  # type: ignore
-            username='testuser', password='password'
+            username='testuser',
+            password='password',
+            is_verified=True
+
         )
         self.client.force_authenticate(user=self.user)
         self.transaction1 = TransactionModel.objects.create(

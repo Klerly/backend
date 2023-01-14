@@ -24,7 +24,4 @@ urlpatterns = [
     path('auth/general/verification/check/reset-password-token', apis.CheckResetPasswordEmailTokenAPI.as_view(),
          name='account-general-check-reset-password-email-token'),
 
-
-    path('auth/general/test-authenticated', apis.TestAuthenticatedAPI.as_view(),
-         name='account-general-test-authenticated'),
 ]

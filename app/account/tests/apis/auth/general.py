@@ -6,7 +6,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from unittest import mock
 from account.modules.mail.template import AccountMailTemplate
 from account.models.verification import ResetPasswordTokenVerificationModel, EmailTokenVerificationModel
-
 from urllib.parse import urlencode
 
 
@@ -26,6 +25,8 @@ class GeneralSignUpAPITestCase(TestCase):
         response = self.client.post(
             self.url, self.signup_data, format="json")
         self.assertEqual(response.status_code, 201)
+        self.assertIn("token", response.data) # type: ignore
+        self.assertIn("is_verified", response.data) # type: ignore
         self.assertEqual(get_user_model().objects.count(), 1)
 
     def test_signup_with_invalid_data(self):
@@ -114,28 +115,22 @@ class SendVerificationEmailAPITestCase(TestCase):
             password="password123",
             is_active=False
         )
+        self.client.force_authenticate(self.user)
 
     def test_send_verification_email_with_valid_data(self):
         # Ensure that the API view sends a verification email with valid data
         with mock.patch.object(AccountMailTemplate, "VerifyEmail", side_effect=None) as mock_send_verification_email:
-            response = self.client.get(self.url, {"email": self.user.email})
+            response = self.client.get(self.url)
             mock_send_verification_email.assert_called_once()
             self.assertEqual(response.status_code, 200)
 
-    def test_send_verification_email_with_invalid_email(self):
-        # Ensure that the API view returns a 400 status code with an invalid email
-        response = self.client.get(self.url, {"email": "invalid@example.com"})
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("email", response.data)  # type: ignore
-
-    def test_send_verification_email_with_verified_email(self):
-        # Ensure that the API view returns a 400 status code with a verified email
-        self.user.is_active = True
+    def test_send_verification_email_with_verified_account(self):
+        self.user.is_verified = True
         self.user.save()
-        response = self.client.get(self.url, {"email": self.user.email})
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 400)
         self.assertIn("already verified",
-                      response.data["email"])  # type: ignore
+                      response.data["non_field_errors"][0])  # type: ignore
 
 
 class CheckVerificationEmailTokenAPITestCase(TestCase):
@@ -149,7 +144,7 @@ class CheckVerificationEmailTokenAPITestCase(TestCase):
             email="test@example.com",
             username="test@example.com",
             password="password123@@@@@12sq",
-            is_active=False
+            is_verified=False,
         )
         user.email_verification_token = EmailTokenVerificationModel.objects.create(
             token=self.token,
@@ -157,28 +152,27 @@ class CheckVerificationEmailTokenAPITestCase(TestCase):
         )
         user.save()
         self.user = user
+        self.client.force_authenticate(self.user)
 
     def test_check_verification_email_token_with_valid_data(self):
         # Ensure that the API view verifies the user's email with valid data
         data = {
-            "token": self.token,
-            "email": "test@example.com"
+            "token": self.token
         }
         response = self.client.get(self.url, data)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(get_user_model().objects.get(
-            email="test@example.com").is_active)  # type: ignore
+            email="test@example.com").is_verified)  # type: ignore
 
     def test_check_verification_email_token_with_invalid_token(self):
         # Ensure that the API view returns a 400 status code with an invalid token
         data = {
-            "token": "invalidtoken",
-            "email": "test@example.com"
+            "token": "invalidtoken"
         }
         response = self.client.get(self.url, data)
         self.assertEqual(response.status_code, 400)
         self.assertFalse(get_user_model().objects.get(
-            email="test@example.com").is_active)  # type: ignore
+            email="test@example.com").is_verified)  # type: ignore
 
         self.assertIn(
             "token you entered is invalid",
@@ -187,48 +181,31 @@ class CheckVerificationEmailTokenAPITestCase(TestCase):
 
     def test_check_verification_email_token_with_missing_token(self):
         # Ensure that the API view returns a 400 status code with a missing token
-        data = {
-            "email": "test@example.com"
-        }
-        response = self.client.get(self.url, data)
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 400)
         self.assertFalse(get_user_model().objects.get(
-            email="test@example.com").is_active)  # type: ignore
+            email="test@example.com").is_verified)  # type: ignore
         self.assertIn(
-            "Token and email",
+            "Token is required",
             response.data["non_field_errors"][0]  # type: ignore
         )
 
-    def test_check_verification_email_token_with_invalid_email(self):
-        # Ensure that the API view returns a 400 status code with an invalid email
-        data = {
-            "token": self.token,
-            "email": "invalid@example.com"
-        }
-        response = self.client.get(self.url, data)
-        self.assertEqual(response.status_code, 400)
-        self.assertFalse(get_user_model().objects.get(
-            email="test@example.com").is_active)  # type: ignore
-        self.assertIn(
-            "email does not exist",
-            response.data["email"]  # type: ignore
-        )
+
 
     def test_check_verification_email_token_with_already_verified_email(self):
         # Ensure that the API view returns a 400 status code with an already verified email
-        self.user.is_active = True
+        self.user.is_verified = True
         self.user.save()
         data = {
             "token": self.token,
-            "email": "test@example.com"
         }
         response = self.client.get(self.url, data)
         self.assertEqual(response.status_code, 400)
         self.assertTrue(get_user_model().objects.get(
-            email="test@example.com").is_active)  # type: ignore
+            email="test@example.com").is_verified)  # type: ignore
         self.assertIn(
             "already verified",
-            response.data["email"]  # type: ignore
+            response.data["non_field_errors"][0]  # type: ignore
         )
 
 

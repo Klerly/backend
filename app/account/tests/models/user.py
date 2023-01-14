@@ -8,19 +8,18 @@ class UserModelTestCase(TestCase):
         self.user = get_user_model().objects.create_user(  # type: ignore
             username='testuser',
             email='test@example.com',
-            password='testpass',
-            is_active=False
+            password='testpass'
         )
 
-    def test_activate(self):
+    def test_verify(self):
         # Test that the user is inactive by default
-        self.assertFalse(self.user.is_active)
+        self.assertFalse(self.user.is_verified)
 
         # Activate the user
-        self.user.activate()
+        self.user.verify()
 
         # Check that the user is now active
-        self.assertTrue(self.user.is_active)
+        self.assertTrue(self.user.is_verified)
 
     def test_login_success(self):
         # Ensure that the login function returns the expected output with valid data
@@ -28,8 +27,8 @@ class UserModelTestCase(TestCase):
         login_response = self.user.login()
         self.assertIsInstance(login_response, dict)
         self.assertIn("token", login_response)
-        self.assertIn("is_active", login_response)
-        self.assertEqual(login_response["is_active"], False)
+        self.assertIn("is_verified", login_response)
+        self.assertEqual(login_response["is_verified"], False)
         self.assertNotEqual(self.user.last_login, old_login)
 
     def test_logout(self):
