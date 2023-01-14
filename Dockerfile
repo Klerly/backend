@@ -7,10 +7,7 @@ WORKDIR /app
 COPY requirements.txt /app/
 RUN pip3 install -r requirements.txt
 COPY /app /app/
-RUN chmod +x /app/test.sh
-EXPOSE 9000
-EXPOSE 8080
-EXPOSE 80
+EXPOSE 9000 8080 80
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["sh","/entrypoint.sh"]
