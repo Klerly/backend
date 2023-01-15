@@ -87,8 +87,7 @@ class MailChimp(AbstractMail):
             self.mailchimp.messages.send({"message": message})
             return True
         except ApiClientError as error:
-            if error.text != "test":
-                logging.error("Mailchimp error:", error.text)
+            logging.error("Mailchimp error:", error.text)
             return False
 
 
@@ -122,5 +121,14 @@ class Mail:
         Returns:
             bool: True if the email was sent successfully, False otherwise.
         """
-        # Use the send method of the configured mail API provider to send the email
+        # Use the send method of the configured
+        # mail API provider to send the email
+
+        # only send real emails in production
+        if settings.DEBUG:
+            print(
+                f"Sending fake email to {self.to} with subject {self.subject}"
+            )
+            return True
+
         return self.provider.send(self.to, self.subject, self.text, self.html)
