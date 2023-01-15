@@ -5,3 +5,4 @@ from .auth.general import (
     CheckVerificationEmailTokenAPITestCase, SendResetPasswordEmailAPITestCase,
     CheckResetPasswordEmailTokenAPITestCase
 )
+from .user import UserAPITestCase

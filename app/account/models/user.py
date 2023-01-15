@@ -19,6 +19,10 @@ class User(AbstractUser):
         default=False,
         verbose_name=_('Is Verified')
     )
+    email = models.EmailField(
+        unique=True,
+        verbose_name=_('Email')
+    )
 
     def verify(self):
         """ verify a user """
@@ -53,6 +57,7 @@ class User(AbstractUser):
     def logout(self):
         """ Logout user """
         try:
+            print("gdgshdhhdhdhdhdhdhdhdh")
             self.auth_token.delete()  # type: ignore
         except ObjectDoesNotExist:
             pass

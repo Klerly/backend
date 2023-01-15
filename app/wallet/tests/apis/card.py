@@ -51,7 +51,10 @@ class CardListAPITestCase(TestCase):
 
     def test_get_queryset_different_user(self):
         user2 = User.objects.create_user(  # type: ignore
-            username='testuser2', password='password')
+            username='testuser2',
+            email='testuser2@mail.com',
+            password='password'
+        )
         view = CardListAPI()
         view.request = self.factory.get(self.url)
         view.request.user = user2
@@ -109,7 +112,10 @@ class CardRetrieveUpdateDestroyAPITestCase(TestCase):
 
     def test_get_queryset_different_user(self):
         user2 = User.objects.create_user(  # type: ignore
-            username='testuser2', password='password')
+            username='testuser2',
+            email='testuser2@mail.com',
+            password='password'
+        )
         view = CardRetrieveUpdateDestroyAPI()
         view.request = self.factory.get(self.url)
         view.request.user = user2

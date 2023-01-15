@@ -52,6 +52,9 @@ class AccountMailTemplate:
 
             super().__init__(self.to, self.subject, self.text, self.html)
 
+            # TODO@lanre: remove this
+            print("Reset Password: ", self.to, self.subject, token)
+
             # save the token or rewrite the token if it already exists
             ResetPasswordTokenVerificationModel.objects.update_or_create(
                 user=user,
@@ -104,6 +107,9 @@ class AccountMailTemplate:
             </body>
             </html>
             """.format(first_name=self.first_name, token=token)
+
+            # TODO@lanre: remove this
+            print("VerifyEmail: ", self.to, self.subject, token)
 
             super().__init__(self.to, self.subject, self.text, self.html)
 

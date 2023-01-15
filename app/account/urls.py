@@ -1,5 +1,6 @@
 from django.urls import path
 from account import apis
+from account.apis.user import UserAPI
 
 app_name = 'account'
 urlpatterns = [
@@ -24,4 +25,5 @@ urlpatterns = [
     path('auth/general/verification/check/reset-password-token', apis.CheckResetPasswordEmailTokenAPI.as_view(),
          name='account-general-check-reset-password-email-token'),
 
+    path('user', UserAPI.as_view(), name='account-user')
 ]

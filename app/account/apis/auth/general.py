@@ -29,9 +29,9 @@ class GeneralSignUpAPI(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user: User = serializer.save()
-        data = user.login()
+        AccountMailTemplate.VerifyEmail(user).send()
         return SuccessResponse(
-            data,
+            user.login(),
             status=status.HTTP_201_CREATED
         )
 
@@ -51,6 +51,7 @@ class GeneralSignInAPI(generics.CreateAPIView):
 
 class GeneralSignOutAPI(APIView):
     permission_classes: List[Any] = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         user: User = request.user
         user.logout()
@@ -61,6 +62,7 @@ class GeneralSignOutAPI(APIView):
 
 class SendVerificationEmailAPI(APIView):
     permission_classes: List[Any] = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         user: User = request.user
         if user.is_verified:
@@ -72,6 +74,7 @@ class SendVerificationEmailAPI(APIView):
 
 class CheckVerificationEmailTokenAPI(APIView):
     permission_classes: List[Any] = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         token = request.GET.get('token')
         if not token:
@@ -149,9 +152,12 @@ class CheckResetPasswordEmailTokenAPI(APIView):
         except DjangoValidationError as e:
             raise HttpValidationError({"password": e.messages})
 
+        token_obj.delete()
+
+        user.logout()
         user.set_password(password)
         user.save()
-        token_obj.delete()
+
         return SuccessResponse(
             'Your password has been reset successfully. Please sign in to continue'
         )

@@ -42,7 +42,9 @@ class TransactionListAPITestCase(TestCase):
 
     def test_get_queryset_different_user(self):
         user2 = User.objects.create_user(  # type: ignore
-            username='testuser2', password='password'
+            username='testuser2',
+            email='testuser2@mail.com',
+            password='password'
         )
         view = TransactionListAPI()
         view.request = self.factory.get(self.transaction_list_url)
@@ -92,7 +94,9 @@ class TransactionRetrieveAPITestCase(TestCase):
 
     def test_get_queryset_different_user(self):
         user2 = User.objects.create_user(  # type: ignore
-            username='testuser2', password='password'
+            username='testuser2',
+            email='testuser2@mail.com',
+            password='password'
         )
         view = TransactionRetrieveAPI()
         view.request = self.factory.get(self.transaction_list_url)

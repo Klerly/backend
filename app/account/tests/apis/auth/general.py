@@ -7,6 +7,7 @@ from unittest import mock
 from account.modules.mail.template import AccountMailTemplate
 from account.models.verification import ResetPasswordTokenVerificationModel, EmailTokenVerificationModel
 from urllib.parse import urlencode
+from account.models import User
 
 
 class GeneralSignUpAPITestCase(TestCase):
@@ -22,12 +23,15 @@ class GeneralSignUpAPITestCase(TestCase):
 
     def test_signup_with_valid_data(self):
         # Ensure that the API view creates a new user with valid data
-        response = self.client.post(
-            self.url, self.signup_data, format="json")
-        self.assertEqual(response.status_code, 201)
-        self.assertIn("token", response.data) # type: ignore
-        self.assertIn("is_verified", response.data) # type: ignore
-        self.assertEqual(get_user_model().objects.count(), 1)
+        with mock.patch.object(AccountMailTemplate, "VerifyEmail", side_effect=None) as mock_send_verification_email:
+            response = self.client.post(
+                self.url, self.signup_data, format="json")
+            self.assertEqual(response.status_code, 201)
+            self.assertIn("token", response.data)  # type: ignore
+            self.assertIn("is_verified", response.data)  # type: ignore
+            self.assertEqual(get_user_model().objects.count(), 1)
+            mock_send_verification_email.assert_called_once()
+
 
     def test_signup_with_invalid_data(self):
         # Ensure that the API view returns a 400 status code with invalid data
@@ -266,6 +270,27 @@ class CheckResetPasswordEmailTokenAPITestCase(TestCase):
         }
         response = self.client.get(self.url, data)
         self.assertEqual(response.status_code, 200)
+
+    @mock.patch.object(User, "logout")
+    @mock.patch.object(ResetPasswordTokenVerificationModel, "delete")
+    def test_change_password(self, mock_delete, mock_logout):
+        # Ensure that the API view changes the password with valid data
+        query_params = {
+            "token": self.token,
+            "email": "test@example.com"
+        }
+        new_password = "newpassword12367298789^^"
+        body = {"password": new_password}
+        response = self.client.post(
+            self.url + "?" + urlencode(query_params), body)
+        self.assertEqual(response.status_code, 200)
+        mock_logout.assert_called_once()
+        mock_delete.assert_called_once()
+
+        # check that the password has been changed
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password(new_password))
+
 
     def test_check_reset_password_email_token_with_invalid_token(self):
         # Ensure that the API view returns a 400 status code with an invalid token
