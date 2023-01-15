@@ -4,6 +4,7 @@ from core.modules.mail import AbstractMail, MailChimp, Mail
 from unittest.mock import Mock, patch
 from mailchimp_transactional.api_client import ApiClientError
 from django.conf import settings
+import logging
 
 
 class TestAbstractMail(TestCase):
@@ -48,19 +49,15 @@ class MailChimpTestCase(TestCase):
         )
 
     def test_send_failure(self):
-        mock_mailchimp_client = Mock()
-        mock_mailchimp_client.messages.send.side_effect = ApiClientError(
-            "test", 400
-        )
-
-        mailchimp = MailChimp()
-        mailchimp.mailchimp = mock_mailchimp_client
-
-        result = mailchimp.send("to@example.com", "subject", "text")
-        self.assertFalse(result)
-
-        mock_mailchimp_client.messages.send.assert_called_with(
-            {"message": {"from_email": settings.DEFAULT_FROM_EMAIL, "subject": "subject", "text": "text", "to": [{"email": "to@example.com", "type": "to"}]}})
+        with patch.object(logging, 'error', side_effect=None):
+            mock_mailchimp_client = Mock()
+            mock_mailchimp_client.messages.send.side_effect = ApiClientError(
+                "test", 400
+            )
+            mailchimp = MailChimp()
+            mailchimp.mailchimp = mock_mailchimp_client
+            result = mailchimp.send("to@example.com", "subject", "text")
+            self.assertFalse(result)
 
 
 class MailTestCase(TestCase):

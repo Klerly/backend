@@ -57,7 +57,6 @@ class User(AbstractUser):
     def logout(self):
         """ Logout user """
         try:
-            print("gdgshdhhdhdhdhdhdhdhdh")
             self.auth_token.delete()  # type: ignore
         except ObjectDoesNotExist:
             pass
