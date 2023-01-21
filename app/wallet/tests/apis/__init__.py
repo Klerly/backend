@@ -1,4 +1,4 @@
 from .balance import WalletBalanceAPITestCase
-from .card import CardListAPITestCase,CardRetrieveUpdateDestroyAPITestCase
-from .payment import PaymentChargeAPITestCase,PaymentVerifyAPITestCase,PaymentInitializeAPITestCase
+# from .card import CardListAPITestCase,CardRetrieveUpdateDestroyAPITestCase
+from .payment.crypto import CryptoPaymentVerifyAPITestCase, CryptoPaymentInitializeAPITestCase
 from .transaction import TransactionListAPITestCase,TransactionRetrieveAPITestCase

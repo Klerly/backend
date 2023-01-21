@@ -6,13 +6,13 @@ from wallet.models import WalletModel, TransactionModel, CardModel
 from rest_framework.test import APIClient
 from account.models import User
 from django.urls import reverse
-from wallet.apis.payment import PaymentWebhookAPI
+from wallet.apis.payment.crypto import CryptoPaymentWebhookAPI
 import json
 import hmac
 import hashlib
 
 
-class PaymentInitializeAPITestCase(TestCase):
+class CryptoPaymentInitializeAPITestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(  # type: ignore
@@ -21,10 +21,10 @@ class PaymentInitializeAPITestCase(TestCase):
             is_verified=True
         )
         self.wallet = WalletModel.objects.create(user=self.user)
-        self.url = reverse('wallet:payment-initialize')
+        self.url = reverse('wallet:payment-crypto-initialize')
         self.data = {'amount': 100}
 
-    @patch('wallet.modules.payment.Payment.initialize')
+    @patch('wallet.modules.payment.crypto.CryptoWalletPayment.initialize')
     def test_initialize_payment(self, mock_initialize):
         mock_initialize.return_value = {'status': 'success'}
         self.client.force_authenticate(user=self.user)  # type: ignore
@@ -46,7 +46,7 @@ class PaymentInitializeAPITestCase(TestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class PaymentVerifyAPITestCase(TestCase):
+class CryptoPaymentVerifyAPITestCase(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.client = APIClient()
@@ -62,10 +62,10 @@ class PaymentVerifyAPITestCase(TestCase):
             status=TransactionModel.Status.PENDING,
             amount=100
         )
-        self.url = reverse('wallet:payment-verify',
+        self.url = reverse('wallet:payment-crypto-verify',
                            args=[self.transaction.reference])
 
-    @patch('wallet.modules.payment.Payment.verify')
+    @patch('wallet.modules.payment.crypto.CryptoWalletPayment.verify')
     def test_verify_payment_success(self, mock_verify):
         mock_verify.return_value = {'status': 'success'}
         self.client.force_authenticate(user=self.user)  # type: ignore
@@ -103,59 +103,19 @@ class PaymentVerifyAPITestCase(TestCase):
         self.assertEqual(response.status_code, 401)
 
 
-class PaymentChargeAPITestCase(TestCase):
-    card_data = {
-        "keep": False,
-        "type": 'Visa',
-        "last_four": '1234',
-        "exp_month": '01',
-        "exp_year": '2022',
-        "authorization_code": 'authcode',
-        "data": {'last4': '1234', 'exp_month': '01', 'exp_year': '2022',
-                     'authorization_code': 'authcode', 'signature': 'signature'}
-    }
-
+class CryptoPaymentWebhookAPITest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
-        self.client = APIClient()
-        self.user = User.objects.create_user(  # type: ignore
-            username='testuser', password='password',
-            is_verified=True
-        )
-        self.wallet = WalletModel.objects.create(user=self.user, balance=1000)
-        self.card = CardModel.objects.create(
-            user=self.user,
-            signature='signature',
-            **self.card_data
-        )
-        self.url = reverse('wallet:payment-charge')
-        self.client.force_authenticate(user=self.user)
-
-    @patch('wallet.modules.payment.Payment.charge')
-    def test_valid_charge(self, mock_charge):
-        mock_charge.return_value = {'status': 'success'}
-        data = {'amount': 100, 'signature': 'signature'}
-        response = self.client.post(self.url, data)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['status'], 'success')  # type: ignore
-        mock_charge.assert_called_with(self.card, 100)
-
-
-class PaymentWebhookAPITest(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.view = PaymentWebhookAPI.as_view()
-        self.url = reverse('wallet:payment-webhook')
+        self.view = CryptoPaymentWebhookAPI.as_view()
+        self.url = reverse('wallet:payment-crypto-webhook')
         self.request_data = {
-            'event': 'charge.success',
-            'data': {
-                'status': 'success',
-                'reference': 'txn_123'
-            }
+            "id": "d6c4822a-964e-44db-94c4-8eae940ef065",
+            "reference": "txn_123",
+            "webhookType": "DEPOSIT_TRANSACTION"
         }
-        self.paystack_signature = hmac.new(
+        self.lazerpay_signature = hmac.new(
             b'secret_key', json.dumps(self.request_data).encode('utf-8'),
-            hashlib.sha512).hexdigest()
+            hashlib.sha256).hexdigest()
         self.transaction = TransactionModel.objects.create(
             user=User.objects.create_user(  # type: ignore
                 username='testuser', password='password'),
@@ -164,40 +124,24 @@ class PaymentWebhookAPITest(TestCase):
             amount=100
         )
 
-    @patch('wallet.modules.payment.Payment.success')
+    @patch('wallet.modules.payment.crypto.CryptoWalletPayment.success')
     def test_valid_request(self, mock_success):
-        with self.settings(
-            PAYSTACK_WHITELISTED_IPS=['127.0.0.1'],
-            PAYSTACK_SECRET_KEY='secret_key'
-        ):
+        with self.settings(LAZERPAY_SECRET_KEY='secret_key'):
             request = self.factory.post(self.url, json.dumps(
                 self.request_data), content_type='application/json')
-            request.META['HTTP_X_FORWARDED_FOR'] = '127.0.0.1'
-            request.META['HTTP_X_PAYSTACK_SIGNATURE'] = self.paystack_signature
+            request.META['HTTP_X_LAZERPAY_SIGNATURE'] = self.lazerpay_signature
 
             response = self.view(request)
             mock_success.assert_called_once_with(
-                self.transaction,
-                self.request_data['data']
+                self.transaction
             )
             self.assertEqual(response.status_code, 200)
 
-    def test_invalid_ip(self):
-        with self.settings(PAYSTACK_WHITELISTED_IPS=['192.168.1.1']):
-            request = self.factory.post(self.url, json.dumps(
-                self.request_data), content_type='application/json')
-            request.META['HTTP_X_FORWARDED_FOR'] = '127.0.0.1'
-            request.META['HTTP_X_PAYSTACK_SIGNATURE'] = self.paystack_signature
-
-            response = self.view(request)
-            self.assertEqual(response.status_code, 403)
-
     def test_invalid_hash(self):
-        with self.settings(PAYSTACK_WHITELISTED_IPS=['192.168.1.1']):
+        with self.settings(LAZERPAY_SECRET_KEY='secret_key'):
             request = self.factory.post(self.url, json.dumps(
                 self.request_data), content_type='application/json')
-            request.META['HTTP_X_FORWARDED_FOR'] = '192.168.1.1'
-            request.META['HTTP_X_PAYSTACK_SIGNATURE'] = "fake-hash"
+            request.META['HTTP_X_LAZERPAY_SIGNATURE'] = "fake-hash"
 
             response = self.view(request)
             self.assertEqual(response.status_code, 403)
@@ -206,20 +150,17 @@ class PaymentWebhookAPITest(TestCase):
 
     @patch('logging.error')
     def test_transaction_not_found(self, mock_error):
-        self.request_data['data']['reference'] = 'txn_456'
-        self.paystack_signature = hmac.new(
+        self.request_data['reference'] = 'txn_456'
+        self.lazerpay_signature = hmac.new(
             b'secret_key', json.dumps(self.request_data).encode('utf-8'),
-            hashlib.sha512).hexdigest()
+            hashlib.sha256).hexdigest()
 
         with self.settings(
-            PAYSTACK_WHITELISTED_IPS=['127.0.0.1'],
-            PAYSTACK_SECRET_KEY='secret_key'
+            LAZERPAY_SECRET_KEY='secret_key'
         ):
             request = self.factory.post(self.url, json.dumps(
                 self.request_data), content_type='application/json')
-            request.META['HTTP_X_FORWARDED_FOR'] = '127.0.0.1'
-            request.META['HTTP_X_PAYSTACK_SIGNATURE'] = self.paystack_signature
-
+            request.META['HTTP_X_LAZERPAY_SIGNATURE'] = self.lazerpay_signature
             response = self.view(request)
             mock_error.assert_called_once()
             self.assertEqual(response.status_code, 200)
