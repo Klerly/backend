@@ -120,7 +120,7 @@ class SendResetPasswordEmailAPI(APIView):
 
         try:
             user: User = get_user_model().objects.get(email=email)  # type: ignore
-        except get_user_model().DoesNotExist:
+        except User.DoesNotExist:
             raise HttpValidationError({
                 'email': 'Unfortunately, we couldn\'t find a user with this email address'
             })
@@ -169,7 +169,7 @@ class CheckResetPasswordEmailTokenAPI(APIView):
             raise HttpValidationError('A token and email are required')
         try:
             user: User = get_user_model().objects.get(email=email)  # type: ignore
-        except get_user_model().DoesNotExist:
+        except User.DoesNotExist:
             raise HttpValidationError(
                 'Unfortunately, we couldn\'t find a user with this email address'
             )
