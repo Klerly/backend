@@ -1,7 +1,7 @@
 
 from django.test import TestCase
 from unittest.mock import patch
-from wallet.modules.payment import Payment
+from core.modules.payment import AbstractPayment
 from wallet.serializers.payment import PaymentInitializeSerializer, PaymentChargeSerializer
 
 
@@ -13,14 +13,14 @@ class PaymentInitializeSerializerTest(TestCase):
     def test_initialize_validation(self):
         serializer = PaymentInitializeSerializer(
             data=self.valid_data)  # type: ignore
-        with patch.object(Payment, 'validate_integer_amount', return_value=True) as mocked_validate:
+        with patch.object(AbstractPayment, 'validate_integer_amount', return_value=True) as mocked_validate:
             self.assertTrue(serializer.is_valid())
             mocked_validate.assert_called_with(self.valid_data['amount'])
 
     def test_initialize_validation_error(self):
         serializer = PaymentInitializeSerializer(
             data=self.invalid_data)  # type: ignore
-        with patch.object(Payment, 'validate_integer_amount', side_effect=ValueError('Invalid amount')) as mocked_validate:
+        with patch.object(AbstractPayment, 'validate_integer_amount', side_effect=ValueError('Invalid amount')) as mocked_validate:
             self.assertFalse(serializer.is_valid())
 
             self.assertEqual(serializer.errors, {'amount': ['Invalid amount']})
@@ -37,7 +37,7 @@ class PaymentChargeSerializerTest(TestCase):
         valid_data = {
             'amount': self.valid_data["amount"], 'signature': 'valid_signature'}
         serializer = PaymentChargeSerializer(data=valid_data)  # type: ignore
-        with patch.object(Payment, 'validate_integer_amount', return_value=True) as mocked_validate:
+        with patch.object(AbstractPayment, 'validate_integer_amount', return_value=True) as mocked_validate:
             self.assertTrue(serializer.is_valid())
             mocked_validate.assert_called_with(valid_data['amount'])
 
@@ -45,7 +45,7 @@ class PaymentChargeSerializerTest(TestCase):
         invalid_data = {
             'amount': self.invalid_data["amount"], 'signature': 'valid_signature'}
         serializer = PaymentChargeSerializer(data=invalid_data)  # type: ignore
-        with patch.object(Payment, 'validate_integer_amount', side_effect=ValueError('Invalid amount')) as mocked_validate:
+        with patch.object(AbstractPayment, 'validate_integer_amount', side_effect=ValueError('Invalid amount')) as mocked_validate:
             self.assertFalse(serializer.is_valid())
             self.assertEqual(serializer.errors, {'amount': ['Invalid amount']})
             mocked_validate.assert_called_with(

@@ -2,7 +2,7 @@
 from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
 from wallet.models import TransactionModel, CardModel
-from wallet.modules.payment import Payment
+from wallet.modules.payment.fiat import FiatWalletPayment
 from core.response import SuccessResponse
 from core.exceptions import HttpValidationError
 from wallet.serializers.payment import PaymentInitializeSerializer, PaymentChargeSerializer
@@ -10,7 +10,7 @@ import hashlib
 import hmac
 from django.conf import settings
 from rest_framework.request import Request
-import logging 
+import logging
 
 
 class PaymentInitializeAPI(APIView):
@@ -18,7 +18,7 @@ class PaymentInitializeAPI(APIView):
         serializer = PaymentInitializeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         amount = serializer.data["amount"]  # type: ignore
-        data = Payment(request.user).initialize(amount)
+        data = FiatWalletPayment(request.user).initialize(amount)
 
         return SuccessResponse(data)
 
@@ -38,7 +38,7 @@ class PaymentVerifyAPI(APIView):
             raise HttpValidationError(
                 "Transaction already completed"
             )
-        data = Payment(request.user).verify(transaction)
+        data = FiatWalletPayment(request.user).verify(transaction)
         return SuccessResponse(data)
 
 
@@ -59,7 +59,7 @@ class PaymentChargeAPI(APIView):
                 "Card not found"
             )
 
-        data = Payment(request.user).charge(card, amount)
+        data = FiatWalletPayment(request.user).charge(card, amount)
         return SuccessResponse(data)
 
 
@@ -87,13 +87,13 @@ class PaymentWebhookAPI(APIView):
                             transaction: TransactionModel = TransactionModel.objects.get(
                                 reference=reference
                             )
-                            Payment(transaction.user).success(
+                            FiatWalletPayment(transaction.user).success(
                                 transaction, data)  # type: ignore
                         except TransactionModel.DoesNotExist:
                             logging.error(
                                 "Transaction not found in webhook. reference",
                                 reference
-                            )    
+                            )
                     return SuccessResponse({})
                 else:
                     logging.error(

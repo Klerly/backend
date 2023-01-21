@@ -28,21 +28,20 @@ class WalletModel(BaseModel):
         verbose_name_plural = _('Wallets')
 
     def fund(self, amount: int):
-        from wallet.modules.payment import Payment
-
-        self.balance += Payment.validate_integer_amount(amount)
+        from core.modules.payment import AbstractPayment
+        self.balance += AbstractPayment.validate_integer_amount(amount)
         self.save()
 
     def deduct(self, amount: Decimal):
-        from wallet.modules.payment import Payment
-
-        self.balance -= Payment.validate_decimal_amount(amount)
+        from core.modules.payment import AbstractPayment
+        self.balance -= AbstractPayment.validate_decimal_amount(amount)
         self.save()
 
 
 class TransactionModel(BaseModel):
     class Type(models.TextChoices):
         DEPOSIT = 'DEP', _('Deposit')
+        WITHDRAWAL = 'WIT', _('Withdrawal')
 
     class Status(models.TextChoices):
         SUCCESS = 'SUC', _('Success')
@@ -86,6 +85,12 @@ class TransactionModel(BaseModel):
 
     def __str__(self):
         return f"{self.user.username}'s {self.type} Transaction"
+
+    def make_reference(self):
+        """ Generate a unique reference for the transaction"""
+        import uuid
+        self.reference = str(uuid.uuid4())
+
 
 
 class CardModel(BaseModel):
