@@ -122,7 +122,7 @@ class SendResetPasswordEmailAPI(APIView):
             user: User = get_user_model().objects.get(email=email)  # type: ignore
         except User.DoesNotExist:
             raise HttpValidationError({
-                'email': 'Unfortunately, we couldn\'t find a user with this email address'
+                'email': ['Unfortunately, we couldn\'t find a user with this email address']
             })
 
         AccountMailTemplate.ResetPassword(user).send()
