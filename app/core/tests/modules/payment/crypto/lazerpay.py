@@ -79,7 +79,8 @@ class LazerPayTest(TestCase):
                 "customer_email": self.user.email,
                 "coin": self.lazerpay.coin,
                 "currency": "USD",
-                "amount": transaction.amount
+                "amount": transaction.amount,
+                "reference": transaction.reference,
             }
         )
 
