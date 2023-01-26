@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'completion.apps.CompletionConfig',
     'wallet.apps.WalletConfig',
+    'jarvis.apps.JarvisConfig',
 ]
 
 MIDDLEWARE = [
