@@ -2,8 +2,9 @@ from django.db import models
 from core.models import BaseModel
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
-from langchain import PromptTemplate
 from rest_framework.exceptions import ValidationError
+from typing import Type, Optional
+from account.models import User
 
 
 class AbstractPromptModel(BaseModel):
@@ -15,16 +16,15 @@ class AbstractPromptModel(BaseModel):
     description = models.TextField()
     template = models.TextField()
     template_params = models.JSONField()
+
+    examples = models.JSONField(null=True, blank=True)
+
+    # To be overridden by subclasses
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.DO_NOTHING)
     type = models.CharField(
         max_length=255,
-        choices=Types.choices
-    )
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        verbose_name=_('User'),
-    )
-    examples = models.JSONField(null=True, blank=True)
+        choices=Types.choices)
 
     class Meta:
         verbose_name = _('Prompt')
@@ -128,15 +128,6 @@ class AbstractPromptModel(BaseModel):
 class AbstractPromptOutputModel(BaseModel):
     # unique id from provider e.g. openai
     uid = models.CharField(max_length=255)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        verbose_name=_('User')
-    )
-    type = models.CharField(
-        max_length=255,
-        choices=AbstractPromptModel.Types.choices
-    )
     model_input = models.TextField()
     input = models.JSONField(
         null=True,
@@ -146,6 +137,14 @@ class AbstractPromptOutputModel(BaseModel):
     model_snapshot = models.JSONField()
     cost = models.FloatField()
 
+    # To be overriden by the child class
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.DO_NOTHING)
+    model = models.ForeignKey('self', on_delete=models.DO_NOTHING)
+
+    type = models.CharField(
+        max_length=255,
+        choices=AbstractPromptModel.Types.choices)
     class Meta:
         verbose_name = _('Completion')
         verbose_name_plural = _('Completions')

@@ -13,7 +13,7 @@ class Dalle2PromptModel(AbstractPromptModel):
     type = AbstractPromptModel.Types.IMAGE
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.DO_NOTHING,
         verbose_name=_('User'),
         related_name='dalle2_prompts'
     )
@@ -69,7 +69,7 @@ class Dalle2PromptModel(AbstractPromptModel):
 class Dalle2PromptOutputModel(AbstractPromptOutputModel):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.DO_NOTHING,
         verbose_name=_('User'),
         related_name='dalle2_prompt_outputs'
     )
