@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from account.models.authentication import TokenAuthenticationProxyModel
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
+from core.models import BaseModel
 
 
 class User(AbstractUser):
@@ -19,10 +20,20 @@ class User(AbstractUser):
         default=False,
         verbose_name=_('Is Verified')
     )
+
     email = models.EmailField(
         unique=True,
         verbose_name=_('Email')
     )
+
+    # seller_profile = models.OneToOneField(
+    #     "Seller",
+    #     on_delete=models.CASCADE,
+    #     verbose_name=_('Seller Profile'),
+    #     related_name='user',
+    #     blank=True,
+    #     null=True
+    # )
 
     def verify(self):
         """ verify a user """
@@ -61,3 +72,29 @@ class User(AbstractUser):
         except ObjectDoesNotExist:
             pass
         return
+
+
+# class Seller(BaseModel):
+#     """ Seller Model """
+
+#     handle = models.CharField(
+#         max_length=255,
+#         unique=True,
+#         verbose_name=_('Handle')
+#     )
+
+#     name = models.CharField(
+#         max_length=255,
+#         verbose_name=_('Name')
+#     )
+#     about = models.TextField(
+#         blank=True, null=True,
+#         verbose_name=_('About')
+#     )
+
+#     def __str__(self):
+#         return self.name
+
+#     class Meta:
+#         verbose_name = _('Seller')
+#         verbose_name_plural = _('Sellers')
