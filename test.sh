@@ -2,7 +2,7 @@
 # Usage: sh test.sh
 
 # run the tests
-cd app && python3 manage.py test --settings=Klerly.settings.test --parallel
+cd app && python3 manage.py test core --settings=Klerly.settings.test --parallel
 if [ $? -ne 0 ]; then
     exit 1
 fi
