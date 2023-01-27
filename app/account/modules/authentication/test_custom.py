@@ -1,5 +1,5 @@
 from django.test import TestCase
-from account.modules.authentication import CustomTokenAuthentication
+from account.modules.authentication.custom import CustomTokenAuthentication
 from account.models.authentication import TokenAuthenticationProxyModel
 from django.contrib.auth import get_user_model
 from django.utils import timezone

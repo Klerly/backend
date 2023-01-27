@@ -1,9 +1,7 @@
 from django.test import TestCase
 from core.exceptions import AuthorizationError
 from unittest import mock
-import json
 from account.modules.authentication.social.google import GoogleProvider
-from django.contrib.auth import get_user_model
 from account.models import User
 
 

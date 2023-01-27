@@ -32,7 +32,6 @@ class GeneralSignUpAPITestCase(TestCase):
             self.assertEqual(get_user_model().objects.count(), 1)
             mock_send_verification_email.assert_called_once()
 
-
     def test_signup_with_invalid_data(self):
         # Ensure that the API view returns a 400 status code with invalid data
         self.signup_data["email"] = ""
@@ -194,8 +193,6 @@ class CheckVerificationEmailTokenAPITestCase(TestCase):
             response.data["non_field_errors"][0]  # type: ignore
         )
 
-
-
     def test_check_verification_email_token_with_already_verified_email(self):
         # Ensure that the API view returns a 400 status code with an already verified email
         self.user.is_verified = True
@@ -290,7 +287,6 @@ class CheckResetPasswordEmailTokenAPITestCase(TestCase):
         # check that the password has been changed
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password(new_password))
-
 
     def test_check_reset_password_email_token_with_invalid_token(self):
         # Ensure that the API view returns a 400 status code with an invalid token
