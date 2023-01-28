@@ -6,6 +6,8 @@ from account.models.authentication import TokenAuthenticationProxyModel
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from core.models import BaseModel
+from django.conf import settings
+from decimal import Decimal
 
 
 class User(AbstractUser):
@@ -25,15 +27,6 @@ class User(AbstractUser):
         unique=True,
         verbose_name=_('Email')
     )
-
-    # seller_profile = models.OneToOneField(
-    #     "Seller",
-    #     on_delete=models.CASCADE,
-    #     verbose_name=_('Seller Profile'),
-    #     related_name='user',
-    #     blank=True,
-    #     null=True
-    # )
 
     def verify(self):
         """ verify a user """
@@ -74,27 +67,47 @@ class User(AbstractUser):
         return
 
 
-# class Seller(BaseModel):
-#     """ Seller Model """
+class Seller(BaseModel):
+    """ Seller Model """
 
-#     handle = models.CharField(
-#         max_length=255,
-#         unique=True,
-#         verbose_name=_('Handle')
-#     )
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name=_('Seller Profile'),
+        related_name='seller_profile',
+    )
 
-#     name = models.CharField(
-#         max_length=255,
-#         verbose_name=_('Name')
-#     )
-#     about = models.TextField(
-#         blank=True, null=True,
-#         verbose_name=_('About')
-#     )
+    handle = models.CharField(
+        max_length=255,
+        unique=True,
+        verbose_name=_('Handle')
+    )
 
-#     def __str__(self):
-#         return self.name
+    name = models.CharField(
+        max_length=255,
+        verbose_name=_('Name')
+    )
+    about = models.TextField(
+        blank=True, null=True,
+        verbose_name=_('About')
+    )
 
-#     class Meta:
-#         verbose_name = _('Seller')
-#         verbose_name_plural = _('Sellers')
+    """ Seller's finalised earnings """
+    earnings = models.DecimalField(
+        max_digits=10, decimal_places=10,
+        default=Decimal(0.00),
+        verbose_name=_('Earnings')
+    )
+    """ Seller's pending earnings """
+    pending_earnings = models.DecimalField(
+        max_digits=10, decimal_places=10,
+        default=Decimal(0.00),
+        verbose_name=_('Pending Earnings')
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = _('Seller')
+        verbose_name_plural = _('Sellers')

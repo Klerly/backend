@@ -1,6 +1,12 @@
 from django.urls import path
 from account import apis
-from account.apis.user import UserAPI
+from account.apis.user import (
+    UserAPI,
+    SellerCreateAPI,
+    SellerRetrieveUpdateAPI,
+    PublicSellerListAPI,
+    PublicSellerRetrieveAPI
+)
 
 app_name = 'account'
 urlpatterns = [
@@ -25,5 +31,16 @@ urlpatterns = [
     path('auth/general/verification/check/reset-password-token', apis.CheckResetPasswordEmailTokenAPI.as_view(),
          name='account-general-check-reset-password-email-token'),
 
-    path('user', UserAPI.as_view(), name='account-user')
+    path('user', UserAPI.as_view(), name='account-user'),
+
+    path('user/seller', SellerCreateAPI.as_view(),
+         name='account-seller-create'),
+    path('user/seller/me', SellerRetrieveUpdateAPI.as_view(),
+         name='account-seller-detail'),
+
+    path('seller', PublicSellerListAPI.as_view(),
+         name='account-public-seller-list'),
+    path('seller/<str:handle>', PublicSellerRetrieveAPI.as_view(),
+         name='account-public-seller-detail'),
+
 ]
