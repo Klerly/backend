@@ -28,6 +28,10 @@ class User(AbstractUser):
         verbose_name=_('Email')
     )
 
+    def is_seller(self):
+        """ Check if user is a seller """
+        return hasattr(self, 'seller_profile')
+
     def verify(self):
         """ verify a user """
         self.is_verified = True

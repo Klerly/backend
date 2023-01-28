@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from account.models import Seller
 from django.core.exceptions import ObjectDoesNotExist
-
+from account.models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
@@ -49,16 +49,11 @@ class SellerSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        user = self.context['request'].user
-        try:
-            user.seller_profile
-        except ObjectDoesNotExist:
-            pass
-        else:
+        user: User = self.context['request'].user
+        if user.is_seller():
             raise serializers.ValidationError(
                 'You already have a seller profile'
             )
-
         validated_data['user'] = user
         return super().create(validated_data)
 
