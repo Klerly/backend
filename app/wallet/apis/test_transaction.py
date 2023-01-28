@@ -118,7 +118,8 @@ class TransactionRetrieveAPITestCase(TestCase):
                          ['amount'], 3000)
 
     def test_delete_transaction(self):
-        self.assertEqual(TransactionModel.objects.count(), 2)
+        self.assertEqual(self.transaction1.is_active, True)
         response = self.client.delete(self.transaction_detail_url)
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(TransactionModel.objects.count(), 1)
+        self.transaction1.refresh_from_db()
+        self.assertEqual(self.transaction1.is_active, False)

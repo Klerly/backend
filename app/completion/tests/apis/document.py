@@ -151,15 +151,17 @@ class DocumentRetrieveUpdateDestroyAPITestCase(TestCase):
 
     def test_delete_document(self):
         """ Test deleting a document """
-        document = DocumentModel.objects.create(
+        document: DocumentModel = DocumentModel.objects.create(
             user=self.user,
             prompt=self.prompt,
             name='Test Document',
             text='This is a test document'
         )
+        self.assertTrue(document.is_active)
         self.url = reverse('completion:document-retrieve',
-                           kwargs={'pk': document.id}
+                           kwargs={'pk': document.id}  # type: ignore
                            )
         response = self.client.delete(self.url)
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(DocumentModel.objects.count(), 0)
+        document.refresh_from_db()
+        self.assertFalse(document.is_active)

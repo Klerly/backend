@@ -76,9 +76,9 @@ class CryptoPaymentVerifyAPITestCase(TestCase):
         mock_verify.assert_called_once_with(self.transaction)
 
     def test_verify_payment_not_found(self):
-        self.transaction.delete()
+        url = reverse('wallet:payment-crypto-verify', args=['invalid'])
         self.client.force_authenticate(user=self.user)  # type: ignore
-        response = self.client.get(self.url)
+        response = self.client.get(url)
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
