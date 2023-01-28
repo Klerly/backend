@@ -363,5 +363,12 @@ class AbstractPromptModelTest(TestCase):
         )
 
     def test_delete(self):
+        self.assertEqual(
+            self.concrete_model.objects.first().is_active,  # type: ignore
+            1
+        )
         self.prompt.delete()
-        self.assertEqual(self.concrete_model.objects.count(), 0)
+        self.assertEqual(
+            self.concrete_model.objects.first().is_active,  # type: ignore
+            0
+        )

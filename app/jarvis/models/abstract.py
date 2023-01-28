@@ -3,12 +3,16 @@ from core.models import BaseModel
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
+from jarvis.managers import PromptModelManager
 
 
 class AbstractPromptModel(BaseModel):
     class Types(models.TextChoices):
         TEXT = 'text', _('Text')
         IMAGE = 'image', _('Image')
+
+    objects = PromptModelManager()
+
     icon = models.URLField(max_length=255)
     heading = models.CharField(max_length=255)
     description = models.TextField()

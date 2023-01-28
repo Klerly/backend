@@ -15,7 +15,7 @@ class Dalle2PromptModelTest(TestCase):
             password="testpassword"
         )
         self.concrete_model = Dalle2PromptModel
-        self.prompt = self.concrete_model.objects.create(
+        self.prompt: Dalle2PromptModel = self.concrete_model.objects.create(
             icon="https://www.google.com",
             heading="Sample Heading",
             description="Sample Description",
@@ -72,5 +72,12 @@ class Dalle2PromptModelTest(TestCase):
             self.assertEqual(Dalle2PromptOutputModel.objects.count(), 1)
 
     def test_delete(self):
+        self.assertEqual(
+            self.concrete_model.objects.first().is_active,  # type: ignore
+            1
+        )
         self.prompt.delete()
-        self.assertEqual(self.concrete_model.objects.count(), 0)
+        self.assertEqual(
+            self.concrete_model.objects.first().is_active,  # type: ignore
+            0
+        )

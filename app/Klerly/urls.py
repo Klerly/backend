@@ -22,4 +22,5 @@ urlpatterns = [
     path('api/account/', include('account.urls', namespace='account')),
     path('api/completion/', include('completion.urls', namespace='completion')),
     path('api/wallet/', include('wallet.urls', namespace='wallet')),
+    path('api/jarvis/', include('jarvis.urls', namespace='jarvis')),
 ]
