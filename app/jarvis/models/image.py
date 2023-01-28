@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from jarvis.models import AbstractPromptModel, AbstractPromptOutputModel
-
+from rest_framework.exceptions import ValidationError
 
 class Dalle2PromptModel(AbstractPromptModel):
     class ImageSizes(models.TextChoices):
@@ -26,15 +26,18 @@ class Dalle2PromptModel(AbstractPromptModel):
     def __str__(self):
         return self.heading
 
+    def validate_size(self, size: str):
+        if size not in [size for size in self.ImageSizes.values]:
+            raise ValidationError("The size you entered is invalid")
+
+
     def generate(
         self,
         size: ImageSizes = ImageSizes.MEDIUM,
         **kwargs
-    ):
-        # if "size" not in kwargs or kwargs["size"] not in self.ImageSizes.values:
-        #     raise ValueError(
-        #         'The "size" parameter is missing or invalid. Ensure that the input has the format {{ "size": "256x256" }}'
-        #     )
+    ) -> str:
+
+        self.validate_size(size)
 
         import openai
         openai.api_key = settings.OPENAI_API_KEY
@@ -47,7 +50,7 @@ class Dalle2PromptModel(AbstractPromptModel):
             n=1
         )
 
-        output = response["data"][0]["url"]  # type: ignore
+        output: str = response["data"][0]["url"]  # type: ignore
         model_snapshot = self.__dict__.copy()
         model_snapshot.pop("_state", None)
         model_snapshot["created_at"] = model_snapshot["created_at"].isoformat()

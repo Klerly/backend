@@ -9,7 +9,10 @@ from unittest import mock
 
 from django.test import TestCase
 from jarvis.models import GPT3PromptOutputModel
-from jarvis.serializers.abstract import AbstractPromptSellerSerializer
+from jarvis.serializers.abstract import (
+    AbstractPromptSellerSerializer,
+    AbstractPromptBuyerSerializer
+)
 from account.models import User
 
 
@@ -195,3 +198,115 @@ class AbstractPromptSellerSerializerTest(TestCase):
         self.assertTrue(serializer.is_valid())
         prompt = serializer.save()
         self.assertEqual(prompt.examples, None)
+
+
+class DummyPromptBuyerSerializer(AbstractPromptBuyerSerializer):
+    class Meta(AbstractPromptBuyerSerializer.Meta):
+        model = GPT3PromptModel
+
+
+class BadModelDummyPromptBuyerSerializer(AbstractPromptBuyerSerializer):
+    """ Uses an invalid model in Meta class"""
+    class Meta(AbstractPromptBuyerSerializer.Meta):
+        model = User
+
+
+class AbstractPromptBuyerSerializerTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(  # type:ignore
+            email='testuser@email.com',
+            username='testuser',
+            password='testpassword')
+        self.prompt_data = {
+            "icon": "https://www.google.com",
+            "heading": "Sample Heading",
+            "description": "Sample Description",
+            "template": """
+            This is a sample template
+            Generate a business name acronym: {prompt}
+            """,
+            "template_params": [
+                {
+                    "name": "prompt",
+                    "description": "The name of the business"
+                }
+            ],
+            "user": self.user
+        }
+        self.prompt_params = {
+            "prompt": "i am a prompt parameter"
+        }
+        self.prompt = GPT3PromptModel.objects.create(
+            **self.prompt_data
+        )
+
+        request = type('Request', (object,), {
+            'user': self.user
+        })
+        self.serializer = DummyPromptBuyerSerializer(
+            context={'request': request},
+            instance=self.prompt
+        )
+
+    def test_init_subclass(self):
+        # ensure model is of AbstractPromptModel
+        with self.assertRaises(AssertionError) as context:
+            BadModelDummyPromptBuyerSerializer(
+                instance=self.prompt,
+                data=self.prompt_params
+            )
+
+        self.assertTrue(
+            "model must be a subclass of AbstractPromptModel"
+            in str(context.exception)
+        )
+
+    def test_init_instance(self):
+        # ensure instance is set
+        with self.assertRaises(AssertionError) as context:
+            DummyPromptBuyerSerializer(
+                instance=None,
+                data=self.prompt_params
+            )
+
+        self.assertTrue(
+            "instance must be set during initialization"
+            in str(context.exception)
+        )
+
+    def test_fields(self):
+        # ensure that all AbstractPromptBuyerSerializer
+        # fields are included in the serializer
+        self.assertEqual(
+            set(AbstractPromptBuyerSerializer.Meta.fields),
+            set(self.serializer.fields.keys())
+        )
+
+    def test_validate_prompt_params(self):
+        # ensure that prompt_params are validated
+        # by the model
+        self.prompt.validate_prompt = mock.Mock()
+        self.prompt.validate_prompt.return_value = True
+        self.serializer.validate_prompt_params(self.prompt_params)
+        self.prompt.validate_prompt.assert_called_once()
+
+    def test_validate_prompt_params_2(self):
+        # ensure that prompt_params are validated
+        # when a serializer is created
+        self.prompt.validate_prompt = mock.Mock()
+        self.prompt.validate_prompt.return_value = True
+        serializer = DummyPromptBuyerSerializer(
+            instance=self.prompt,
+            data={
+                'prompt_params': self.prompt_params,
+            },
+            context={'request': self.serializer.context['request']}
+        )
+        serializer.is_valid(raise_exception=True)
+        self.assertTrue(serializer.is_valid())
+        self.prompt.validate_prompt.assert_called_once()
+
+    def test_generate(self):
+        # ensure that generate method is implemented
+        with self.assertRaises(NotImplementedError):
+            self.serializer.generate()

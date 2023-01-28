@@ -59,7 +59,7 @@ class GPT3PromptModel(AbstractPromptModel):
         self._validate_model()
         return super().save(*args, **kwargs)
 
-    def complete(self, **kwargs):
+    def generate(self, **kwargs) -> str:
         import openai
         openai.api_key = settings.OPENAI_API_KEY
         prompt = self.get_prompt(**kwargs)

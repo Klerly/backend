@@ -3,12 +3,13 @@ from jarvis.models import (
     GPT3PromptModel,
     GPT3PromptOutputModel
 )
-from jarvis.serializers import GPT3PromptSellerSerializer
+from jarvis.serializers import GPT3PromptSellerSerializer, GPT3PromptBuyerSerializer
 from jarvis.serializers.abstract import AbstractPromptSellerSerializer
 
 from django.test import TestCase
 from jarvis.models import GPT3PromptOutputModel
 from account.models import User
+from unittest import mock
 
 
 class GPT3PromptSellerSerializerTest(TestCase):
@@ -112,3 +113,49 @@ class GPT3PromptSellerSerializerTest(TestCase):
             ).template_params[0]['name'],  # type: ignore
             'updated_prompt_param'
         )
+
+
+class GPT3PromptBuyerSerializerTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(  # type:ignore
+            email='testuser@email.com',
+            username='testuser',
+            password='testpassword')
+        self.prompt_data = {
+            "icon": "https://www.google.com",
+            "heading": "Sample Heading",
+            "description": "Sample Description",
+            "template": """
+            This is a sample template
+            Generate a business name acronym: {prompt}
+            """,
+            "template_params": [
+                {
+                    "name": "prompt",
+                    "description": "The name of the business"
+                }
+            ],
+            "user": self.user
+        }
+        self.prompt_params = {
+            "prompt": "i am a prompt parameter"
+        }
+        self.prompt = GPT3PromptModel.objects.create(
+            **self.prompt_data
+        )
+
+    def test_generate(self):
+        data = {
+            "prompt_params": self.prompt_params
+        }
+        serializer = GPT3PromptBuyerSerializer(
+            instance=self.prompt,
+            data=data
+        )
+        self.assertTrue(serializer.is_valid())
+        with mock.patch.object(GPT3PromptModel, 'generate') as mock_generate:
+            mock_generate.return_value = 'test output 1'
+            self.assertEqual(serializer.generate(), 'test output 1')
+            mock_generate.assert_called_once_with(
+                **data,
+            )

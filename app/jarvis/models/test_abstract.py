@@ -202,7 +202,7 @@ class AbstractPromptModelTest(TestCase):
             "business_name": "Test Business",
             "business_type": "Test Type"
         }
-        self.prompt._validate_prompt(**data)
+        self.prompt.validate_prompt(**data)
 
     def test_validate_prompt_invalid(self):
         data = {
@@ -211,7 +211,7 @@ class AbstractPromptModelTest(TestCase):
             "invalid": "Invalid"
         }
         with self.assertRaises(ValidationError) as context:
-            self.prompt._validate_prompt(**data)
+            self.prompt.validate_prompt(**data)
         self.assertTrue(
             "Invalid number of parameters passed" in str(context.exception)
         )
@@ -222,7 +222,7 @@ class AbstractPromptModelTest(TestCase):
             "invalid": "Invalid"
         }
         with self.assertRaises(ValidationError) as context:
-            self.prompt._validate_prompt(**data)
+            self.prompt.validate_prompt(**data)
         self.assertTrue(
             "Invalid parameter passed" in str(context.exception)
         )

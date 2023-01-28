@@ -1,11 +1,13 @@
 # from jarvis.models import AbstractPromptModel, CompletionModel
 from django.test import TestCase
 from jarvis.models import (
+    AbstractPromptModel,
     GPT3PromptModel,
     GPT3PromptOutputModel
 )
 from account.models import User
 from unittest.mock import patch
+from typing import Union
 
 
 class GPT3PromptModelTest(TestCase):
@@ -16,7 +18,7 @@ class GPT3PromptModelTest(TestCase):
             password="testpassword"
         )
         self.concrete_model = GPT3PromptModel
-        self.prompt = self.concrete_model.objects.create(
+        self.prompt: Union[AbstractPromptModel, GPT3PromptModel] = self.concrete_model.objects.create(
             icon="https://www.google.com",
             heading="Sample Heading",
             description="Sample Description",
@@ -45,10 +47,10 @@ class GPT3PromptModelTest(TestCase):
 
     def test_validate_model(self):
         with self.assertRaises(ValueError) as context:
-            self.prompt.model = "non-existent-model"
-            self.prompt._validate_model()
+            self.prompt.model = "non-existent-model"  # type: ignore
+            self.prompt._validate_model()  # type: ignore
 
-    def test_complete(self):
+    def test_generate(self):
         with patch(
             "openai.Completion.create",
             return_value={
@@ -70,17 +72,17 @@ class GPT3PromptModelTest(TestCase):
             }
 
         ) as mock:
-            self.prompt.complete(
+            self.prompt.generate(
                 business_name="Vitamin Group",
                 business_type="We provide vitamin supplements"
             )
             mock.assert_called_once_with(
-                model=self.prompt.model,
-                temperature=self.prompt.temparature,
-                max_tokens=self.prompt.max_tokens,
-                top_p=self.prompt.top_p,
-                frequency_penalty=self.prompt.frequency_penalty,
-                presence_penalty=self.prompt.presence_penalty,
+                model=self.prompt.model,  # type: ignore
+                temperature=self.prompt.temparature,  # type: ignore
+                max_tokens=self.prompt.max_tokens,  # type: ignore
+                top_p=self.prompt.top_p,  # type: ignore
+                frequency_penalty=self.prompt.frequency_penalty,  # type: ignore
+                presence_penalty=self.prompt.presence_penalty,  # type: ignore
                 user=str(self.user.id),
                 prompt=self.prompt.get_prompt(
                     business_name="Vitamin Group",

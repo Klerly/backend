@@ -1,14 +1,21 @@
 from rest_framework import serializers
 from jarvis.models import (
     Dalle2PromptModel,
-    Dalle2PromptOutputModel
+    Dalle2PromptOutputModel,
 )
-from jarvis.serializers import Dalle2PromptSellerSerializer
-from jarvis.serializers.abstract import AbstractPromptSellerSerializer
+from jarvis.serializers import (
+    Dalle2PromptSellerSerializer,
+    Dalle2PromptBuyerSerializer,
+)
+from jarvis.serializers.abstract import (
+    AbstractPromptSellerSerializer,
+    AbstractPromptBuyerSerializer
+)
 
 from django.test import TestCase
 from jarvis.models import Dalle2PromptOutputModel
 from account.models import User
+from unittest import mock
 
 
 class Dalle2PromptSellerSerializerTest(TestCase):
@@ -110,3 +117,85 @@ class Dalle2PromptSellerSerializerTest(TestCase):
             ).template_params[0]['name'],  # type: ignore
             'updated_prompt_param'
         )
+
+
+# class Dalle2PromptBuyerSerializer(AbstractPromptBuyerSerializer):
+#     size = serializers.ChoiceField(
+#         choices=Dalle2PromptModel.ImageSizes.values,
+#         default=Dalle2PromptModel.ImageSizes.MEDIUM
+#     )
+
+#     class Meta(AbstractPromptBuyerSerializer.Meta):
+#         model = Dalle2PromptModel
+#         fields = AbstractPromptBuyerSerializer.Meta.fields + (
+#             'size',
+#         )
+
+#     def generate(self) -> str:
+#         instance: Union[Dalle2PromptModel,
+#                         AbstractPromptModel] = self.instance  # type: ignore
+#         return instance.generate(**self.validated_data)  # type: ignore
+
+
+class Dalle2PromptBuyerSerializerTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(  # type:ignore
+            email='testuser@email.com',
+            username='testuser',
+            password='testpassword')
+        self.prompt_data = {
+            "icon": "https://www.google.com",
+            "heading": "Sample Heading",
+            "description": "Sample Description",
+            "template": """
+            This is a sample template
+            Generate a business name acronym: {prompt}
+            """,
+            "template_params": [
+                {
+                    "name": "prompt",
+                    "description": "The name of the business"
+                }
+            ],
+            "user": self.user
+        }
+        self.prompt_params = {
+            "prompt": "i am a prompt parameter"
+        }
+        self.prompt = Dalle2PromptModel.objects.create(
+            **self.prompt_data
+        )
+
+    def test_generate(self):
+        data = {
+            "prompt_params": self.prompt_params
+        }
+        serializer = Dalle2PromptBuyerSerializer(
+            instance=self.prompt,
+            data=data
+        )
+        self.assertTrue(serializer.is_valid())
+        with mock.patch.object(Dalle2PromptModel, 'generate') as mock_generate:
+            mock_generate.return_value = 'test output 1'
+            self.assertEqual(serializer.generate(), 'test output 1')
+            mock_generate.assert_called_once_with(
+                **data,
+                size=Dalle2PromptModel.ImageSizes.MEDIUM
+            )
+
+    def test_generate_with_size(self):
+        data = {
+            "prompt_params": self.prompt_params,
+            "size": Dalle2PromptModel.ImageSizes.SMALL
+        }
+        serializer = Dalle2PromptBuyerSerializer(
+            instance=self.prompt,
+            data=data
+        )
+        self.assertTrue(serializer.is_valid())
+        with mock.patch.object(Dalle2PromptModel, 'generate') as mock_generate:
+            mock_generate.return_value = 'test output 1'
+            self.assertEqual(serializer.generate(), 'test output 1')
+            mock_generate.assert_called_once_with(
+                **data,
+            )

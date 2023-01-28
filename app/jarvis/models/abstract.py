@@ -3,8 +3,6 @@ from core.models import BaseModel
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
-from typing import Type, Optional
-from account.models import User
 
 
 class AbstractPromptModel(BaseModel):
@@ -37,13 +35,18 @@ class AbstractPromptModel(BaseModel):
 
     def get_prompt(self, **kwargs):
         from langchain import PromptTemplate
-        self._validate_prompt(**kwargs)
+        self.validate_prompt(**kwargs)
         return PromptTemplate(
             input_variables=[param["name"] for param in self.template_params],
             template=self.template
         ).format(**kwargs)
 
     def _validate_example(self):
+        """ Validate the examples the seller has provided
+
+            Raises:
+                ValidationError: If the example format is invalid
+        """
         if not self.examples:
             return
 
@@ -78,7 +81,15 @@ class AbstractPromptModel(BaseModel):
             raise ValidationError(
                 "All examples must have the same keys as the template params")
 
-    def _validate_prompt(self, **kwargs):
+    def validate_prompt(self, **kwargs):
+        """ Validate that the user input is valid
+        
+            Args:
+                kwargs (dict): The user input
+            Raises:
+                ValidationError: If the user input is invalid
+        
+        """
         if len(kwargs) != len(self.template_params):
             raise ValidationError("Invalid number of parameters passed")
 
@@ -118,6 +129,15 @@ class AbstractPromptModel(BaseModel):
                         name
                     )
                 )
+
+    def generate(self, **kwargs) -> str:
+        """ Generate a prompt from the template and the user input
+            Args:
+                kwargs (dict): The user input
+            Returns:
+                str: The generated prompt text or url
+        """
+        raise NotImplementedError
 
     def save(self, *args, **kwargs):
         self._validate_template()

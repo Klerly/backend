@@ -3,7 +3,7 @@ from jarvis.models import (
     AbstractPromptModel,
     AbstractPromptOutputModel
 )
-from typing import List, Type
+from typing import List, Type, Optional
 
 
 class AbstractPromptSellerSerializer(serializers.ModelSerializer):
@@ -29,6 +29,10 @@ class AbstractPromptSellerSerializer(serializers.ModelSerializer):
         if not self.Meta.model:
             raise AssertionError(
                 "model must be set in the Meta class"
+            )
+        if not issubclass(self.Meta.model, AbstractPromptModel):
+            raise AssertionError(
+                "model must be a subclass of AbstractPromptModel"
             )
 
         if not self.Meta.output_model:
@@ -96,3 +100,66 @@ class AbstractPromptSellerSerializer(serializers.ModelSerializer):
             validated_data['examples'] = None
 
         return super().update(instance, validated_data)
+
+
+class AbstractPromptBuyerSerializer(serializers.ModelSerializer):
+    prompt_params = serializers.JSONField(
+        required=True
+    )
+
+    class Meta:
+        model = AbstractPromptModel
+        fields = (
+            "prompt_params",
+        )
+
+    # check that there is an instance
+    # check that the instance is valid
+
+    def __init__(self, instance=None, data=..., **kwargs):
+        if not self.Meta.model:
+            raise AssertionError(
+                "model must be set in the Meta class"
+            )
+
+        if not issubclass(self.Meta.model, AbstractPromptModel):
+            raise AssertionError(
+                "model must be a subclass of AbstractPromptModel"
+            )
+
+        # check that model is a subclass of AbstractPromptModel
+        if not issubclass(self.Meta.model, AbstractPromptModel):
+            raise AssertionError(
+                "model must be a subclass of AbstractPromptModel"
+            )
+
+        if not instance:
+            raise AssertionError(
+                "instance must be set during initialization"
+            )
+
+        super().__init__(instance, data, **kwargs)
+
+    def validate_prompt_params(self, params: dict):
+        """ Validate the prompt field
+        """
+        if not type(params) is dict:
+            raise serializers.ValidationError(
+                "Prompt params must be a dictionary"
+            )
+        instance: AbstractPromptModel = self.instance  # type: ignore
+        instance.validate_prompt(**params)
+        return params
+
+    def generate(self) -> str:
+        """ Generate a prompt output
+        """
+        raise NotImplementedError
+
+    def create(self, validated_data):
+        """ This should never be called"""
+        raise NotImplementedError
+
+    def update(self, instance, validated_data):
+        """ This should never be called"""
+        raise NotImplementedError
