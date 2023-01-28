@@ -14,7 +14,7 @@ from jarvis.serializers.abstract import (
 
 from django.test import TestCase
 from jarvis.models import Dalle2PromptOutputModel
-from account.models import User
+from account.models import User, Seller
 from unittest import mock
 
 
@@ -24,6 +24,11 @@ class Dalle2PromptSellerSerializerTest(TestCase):
             email='testuser@email.com',
             username='testuser',
             password='testpassword')
+        self.seller: Seller = Seller.objects.create(  # type: ignore
+            user=self.user,
+            handle='testhandle',
+            name='Test Name',
+        )
         self.prompt_data = {
             "icon": "https://www.google.com",
             "heading": "Sample Heading",
@@ -119,30 +124,17 @@ class Dalle2PromptSellerSerializerTest(TestCase):
         )
 
 
-# class Dalle2PromptBuyerSerializer(AbstractPromptBuyerSerializer):
-#     size = serializers.ChoiceField(
-#         choices=Dalle2PromptModel.ImageSizes.values,
-#         default=Dalle2PromptModel.ImageSizes.MEDIUM
-#     )
-
-#     class Meta(AbstractPromptBuyerSerializer.Meta):
-#         model = Dalle2PromptModel
-#         fields = AbstractPromptBuyerSerializer.Meta.fields + (
-#             'size',
-#         )
-
-#     def generate(self) -> str:
-#         instance: Union[Dalle2PromptModel,
-#                         AbstractPromptModel] = self.instance  # type: ignore
-#         return instance.generate(**self.validated_data)  # type: ignore
-
-
 class Dalle2PromptBuyerSerializerTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(  # type:ignore
             email='testuser@email.com',
             username='testuser',
             password='testpassword')
+        self.seller: Seller = Seller.objects.create(  # type: ignore
+            user=self.user,
+            handle='testhandle',
+            name='Test Name',
+        )
         self.prompt_data = {
             "icon": "https://www.google.com",
             "heading": "Sample Heading",

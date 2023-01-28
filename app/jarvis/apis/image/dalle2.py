@@ -14,25 +14,30 @@ from jarvis.serializers.image.dalle2 import (
 from rest_framework import filters
 
 
-class Dalle2PromptSellerCreateAPIView(ListCreateAPIView):
-    queryset = Dalle2PromptModel.objects.all()
+class Dalle2PromptSellerListCreateAPIView(ListCreateAPIView):
     serializer_class = Dalle2PromptSellerSerializer
+
+    def get_queryset(self):
+        queryset = Dalle2PromptModel.objects.active()
+        return queryset.filter(
+            user=self.request.user
+        )
 
 
 class Dalle2PromptSellerRetrieveUpdateDestroyAPIView(
     RetrieveUpdateDestroyAPIView
 ):
-    queryset = Dalle2PromptModel.objects.all()
     serializer_class = Dalle2PromptSellerSerializer
 
     def get_queryset(self):
-        return super().get_queryset().filter(
+        queryset = Dalle2PromptModel.objects.active()
+        return queryset.filter(
             user=self.request.user
         )
 
 
 class Dalle2PromptBuyerListAPIView(ListAPIView):
-    queryset = Dalle2PromptModel.objects.active()
+    queryset = Dalle2PromptModel.objects.active_for_buyer()
     serializer_class = Dalle2PromptBuyerSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = [
@@ -44,5 +49,5 @@ class Dalle2PromptBuyerListAPIView(ListAPIView):
 
 
 class Dalle2PromptBuyerRetrieveAPIView(RetrieveAPIView):
-    queryset = Dalle2PromptModel.objects.active()
+    queryset = Dalle2PromptModel.objects.active_for_buyer()
     serializer_class = Dalle2PromptBuyerSerializer

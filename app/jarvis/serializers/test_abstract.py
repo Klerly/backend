@@ -13,7 +13,7 @@ from jarvis.serializers.abstract import (
     AbstractPromptSellerSerializer,
     AbstractPromptBuyerSerializer
 )
-from account.models import User
+from account.models import User, Seller
 
 
 class DummyPromptSellerSerializer(AbstractPromptSellerSerializer):
@@ -33,6 +33,11 @@ class AbstractPromptSellerSerializerTest(TestCase):
             email='testuser@email.com',
             username='testuser',
             password='testpassword')
+        self.seller: Seller = Seller.objects.create(  # type: ignore
+            user=self.user,
+            handle='testhandle',
+            name='Test Name',
+        )
         self.prompt_data = {
             "icon": "https://www.google.com",
             "heading": "Sample Heading",
@@ -217,6 +222,11 @@ class AbstractPromptBuyerSerializerTestCase(TestCase):
             email='testuser@email.com',
             username='testuser',
             password='testpassword')
+        self.seller: Seller = Seller.objects.create(  # type: ignore
+            user=self.user,
+            handle='testhandle',
+            name='Test Name',
+        )
         self.prompt_data = {
             "icon": "https://www.google.com",
             "heading": "Sample Heading",

@@ -2,7 +2,7 @@ from core.managers import BaseModelManager
 
 
 class PromptModelManager(BaseModelManager):
-    def active(self, *args, **kwargs):
+    def active_for_buyer(self, *args, **kwargs):
         return super().active().filter(
             *args,
             **kwargs,

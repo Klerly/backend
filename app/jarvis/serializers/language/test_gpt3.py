@@ -8,7 +8,7 @@ from jarvis.serializers.abstract import AbstractPromptSellerSerializer
 
 from django.test import TestCase
 from jarvis.models import GPT3PromptOutputModel
-from account.models import User
+from account.models import User, Seller
 from unittest import mock
 
 
@@ -18,6 +18,12 @@ class GPT3PromptSellerSerializerTest(TestCase):
             email='testuser@email.com',
             username='testuser',
             password='testpassword')
+        self.seller: Seller = Seller.objects.create(  # type: ignore
+            user=self.user,
+            handle='testhandle',
+            name='Test Name',
+        )
+
         self.prompt_data = {
             "icon": "https://www.google.com",
             "heading": "Sample Heading",
@@ -121,6 +127,11 @@ class GPT3PromptBuyerSerializerTest(TestCase):
             email='testuser@email.com',
             username='testuser',
             password='testpassword')
+        self.seller: Seller = Seller.objects.create(  # type: ignore
+            user=self.user,
+            handle='testhandle',
+            name='Test Name',
+        )
         self.prompt_data = {
             "icon": "https://www.google.com",
             "heading": "Sample Heading",

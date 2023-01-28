@@ -5,7 +5,7 @@ from jarvis.models import (
     GPT3PromptModel,
     GPT3PromptOutputModel
 )
-from account.models import User
+from account.models import User, Seller
 from unittest.mock import patch
 from typing import Union
 
@@ -16,6 +16,11 @@ class GPT3PromptModelTest(TestCase):
             username="testuser",
             email="testuser@email.co",
             password="testpassword"
+        )
+        self.seller: Seller = Seller.objects.create(  # type: ignore
+            user=self.user,
+            handle='testhandle',
+            name='Test Name',
         )
         self.concrete_model = GPT3PromptModel
         self.prompt: Union[AbstractPromptModel, GPT3PromptModel] = self.concrete_model.objects.create(

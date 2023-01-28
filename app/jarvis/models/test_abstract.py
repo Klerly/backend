@@ -3,7 +3,7 @@ from django.test import TestCase
 from jarvis.models import (
     GPT3PromptModel
 )
-from account.models import User
+from account.models import User,Seller
 from rest_framework.exceptions import ValidationError
 from unittest.mock import patch
 
@@ -14,6 +14,11 @@ class AbstractPromptModelTest(TestCase):
             username="testuser",
             email="testuser@email.co",
             password="testpassword"
+        )
+        self.seller: Seller = Seller.objects.create(  # type: ignore
+            user=self.user,
+            handle='testhandle',
+            name='Test Name',
         )
         self.concrete_model = GPT3PromptModel
 
@@ -45,14 +50,14 @@ class AbstractPromptModelTest(TestCase):
 
     def test_create(self):
         with patch.object(
-            self.concrete_model, "_validate_template"
-        ) as mock_validate_template_params, patch.object(
+            self.concrete_model, "validate_template"
+        ) as mockvalidate_template_params, patch.object(
             self.concrete_model, "_validate_example"
         ) as mock_validate_example:
             self.concrete_model.objects.create(
                 **self.prompt_data
             )
-            mock_validate_template_params.assert_called_once()
+            mockvalidate_template_params.assert_called_once()
             mock_validate_example.assert_called_once()
 
     def test_create_invalid_template(self):

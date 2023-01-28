@@ -1,12 +1,12 @@
 from django.urls import path
 from jarvis.apis.image.dalle2 import (
-    Dalle2PromptSellerCreateAPIView,
+    Dalle2PromptSellerListCreateAPIView,
     Dalle2PromptSellerRetrieveUpdateDestroyAPIView,
     Dalle2PromptBuyerListAPIView,
     Dalle2PromptBuyerRetrieveAPIView
 )
 from jarvis.apis.language.gpt3 import (
-    GPT3PromptSellerCreateAPIView,
+    GPT3PromptSellerListCreateAPIView,
     GPT3PromptSellerRetrieveUpdateDestroyAPIView,
     GPT3PromptBuyerListAPIView,
     GPT3PromptBuyerRetrieveAPIView
@@ -15,7 +15,7 @@ from jarvis.apis.language.gpt3 import (
 
 app_name = 'jarvis'
 urlpatterns = [
-    path('language/gpt3/seller', GPT3PromptSellerCreateAPIView.as_view(),
+    path('language/gpt3/seller', GPT3PromptSellerListCreateAPIView.as_view(),
          name='gpt3-prompt-seller-create'
          ),
     path('language/gpt3/seller/<int:pk>', GPT3PromptSellerRetrieveUpdateDestroyAPIView.as_view(),
@@ -27,7 +27,7 @@ urlpatterns = [
     path('language/gpt3/<int:pk>', GPT3PromptBuyerRetrieveAPIView.as_view(),
          name='gpt3-prompt-buyer-detail'
          ),
-    path('image/dalle2/seller', Dalle2PromptSellerCreateAPIView.as_view(),
+    path('image/dalle2/seller', Dalle2PromptSellerListCreateAPIView.as_view(),
          name='dalle2-prompt-seller-create'
          ),
     path('image/dalle2/seller/<int:pk>', Dalle2PromptSellerRetrieveUpdateDestroyAPIView.as_view(),

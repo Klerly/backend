@@ -4,6 +4,8 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
 from jarvis.managers import PromptModelManager
+from django.core.exceptions import ObjectDoesNotExist
+from account.models import User
 
 
 class AbstractPromptModel(BaseModel):
@@ -101,7 +103,7 @@ class AbstractPromptModel(BaseModel):
             if kwarg not in [param["name"] for param in self.template_params]:
                 raise ValidationError("Invalid parameter passed")
 
-    def _validate_template(self):
+    def validate_template(self):
         for param in self.template_params:
             if "name" not in param:
                 raise ValidationError(
@@ -144,8 +146,15 @@ class AbstractPromptModel(BaseModel):
         raise NotImplementedError
 
     def save(self, *args, **kwargs):
-        self._validate_template()
+        self.validate_template()
         self._validate_example()
+        if not self.pk:
+            user: User = self.user
+            if not user.is_seller():
+                raise ValueError(
+                    "User with id {} is not a seller".format(user.pk)
+                )
+
         super().save(*args, **kwargs)
 
 

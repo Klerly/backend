@@ -14,25 +14,30 @@ from jarvis.serializers.language.gpt3 import (
 from rest_framework import filters
 
 
-class GPT3PromptSellerCreateAPIView(ListCreateAPIView):
-    queryset = GPT3PromptModel.objects.all()
+class GPT3PromptSellerListCreateAPIView(ListCreateAPIView):
     serializer_class = GPT3PromptSellerSerializer
+
+    def get_queryset(self):
+        queryset = GPT3PromptModel.objects.active()
+        return queryset.filter(
+            user=self.request.user
+        )
 
 
 class GPT3PromptSellerRetrieveUpdateDestroyAPIView(
     RetrieveUpdateDestroyAPIView
 ):
-    queryset = GPT3PromptModel.objects.all()
     serializer_class = GPT3PromptSellerSerializer
 
     def get_queryset(self):
-        return super().get_queryset().filter(
+        queryset = GPT3PromptModel.objects.active()
+        return queryset.filter(
             user=self.request.user
         )
 
 
 class GPT3PromptBuyerListAPIView(ListAPIView):
-    queryset = GPT3PromptModel.objects.active()
+    queryset = GPT3PromptModel.objects.active_for_buyer()
     serializer_class = GPT3PromptBuyerSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = [
@@ -44,5 +49,5 @@ class GPT3PromptBuyerListAPIView(ListAPIView):
 
 
 class GPT3PromptBuyerRetrieveAPIView(RetrieveAPIView):
-    queryset = GPT3PromptModel.objects.active()
+    queryset = GPT3PromptModel.objects.active_for_buyer()
     serializer_class = GPT3PromptBuyerSerializer

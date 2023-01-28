@@ -4,7 +4,9 @@ from jarvis.models import (
     AbstractPromptOutputModel
 )
 from typing import List, Type, Optional
-
+from account.models import User
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.fields import empty
 
 class AbstractPromptSellerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,7 +27,7 @@ class AbstractPromptSellerSerializer(serializers.ModelSerializer):
             'examples',
         )
 
-    def __init__(self, instance=None, data=..., **kwargs):
+    def __init__(self, instance=None, data=empty, **kwargs):
         if not self.Meta.model:
             raise AssertionError(
                 "model must be set in the Meta class"
@@ -91,7 +93,12 @@ class AbstractPromptSellerSerializer(serializers.ModelSerializer):
         return examples
 
     def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
+        user: User = self.context['request'].user
+        if not user.is_seller():
+            raise serializers.ValidationError(
+                "You must have a seller profile to create prompts"
+            )
+        validated_data['user'] = user
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
@@ -104,19 +111,36 @@ class AbstractPromptSellerSerializer(serializers.ModelSerializer):
 
 class AbstractPromptBuyerSerializer(serializers.ModelSerializer):
     prompt_params = serializers.JSONField(
-        required=True
+        required=True,
+        write_only=True
     )
 
     class Meta:
         model = AbstractPromptModel
-        fields = (
+        read_only_fields = (
+            'id',
+            'heading',
+            'description',
+            'created_at',
+            'updated_at',
+            'icon',
+            'type',
+            'examples',
+            'template_params',
+
+        )
+        fields = read_only_fields + (
             "prompt_params",
+        )
+
+        restricted_fields = (
+            'template',
         )
 
     # check that there is an instance
     # check that the instance is valid
 
-    def __init__(self, instance=None, data=..., **kwargs):
+    def __init__(self, instance=None, data=empty, **kwargs):
         if not self.Meta.model:
             raise AssertionError(
                 "model must be set in the Meta class"
@@ -136,6 +160,36 @@ class AbstractPromptBuyerSerializer(serializers.ModelSerializer):
         if not instance:
             raise AssertionError(
                 "instance must be set during initialization"
+            )
+
+        # check that the read only fields in any subclasses
+        # are a subset of the read only fields in the base class.
+
+        if not set(self.Meta.read_only_fields).issubset(set(AbstractPromptBuyerSerializer.Meta.read_only_fields)):
+            raise AssertionError(
+                """
+                read_only_fields must be a subset of the read_only_fields in the base class
+
+                To solve this issue, add the following to the Meta class:
+
+                read_only_fields = AbstractPromptBuyerSerializer.Meta.read_only_fields + (
+                    "your_read_only_field",
+                )
+                """
+            )
+
+        # check that the restricted fields do not appear in the fields
+        if set(self.Meta.restricted_fields).intersection(set(self.Meta.fields)):
+            raise AssertionError(
+                """
+                restricted_fields must not appear in the fields list
+
+                To solve this issue, remove the following from the Meta class:
+
+                "{}"
+                """.format(
+                    ", ".join(self.Meta.restricted_fields)
+                )
             )
 
         super().__init__(instance, data, **kwargs)

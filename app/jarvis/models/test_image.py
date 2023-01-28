@@ -3,7 +3,7 @@ from jarvis.models import (
     Dalle2PromptModel,
     Dalle2PromptOutputModel
 )
-from account.models import User
+from account.models import User, Seller
 from unittest.mock import patch
 
 
@@ -13,6 +13,11 @@ class Dalle2PromptModelTest(TestCase):
             username="testuser",
             email="testuser@email.co",
             password="testpassword"
+        )
+        self.seller: Seller = Seller.objects.create(  # type: ignore
+            user=self.user,
+            handle='testhandle',
+            name='Test Name',
         )
         self.concrete_model = Dalle2PromptModel
         self.prompt: Dalle2PromptModel = self.concrete_model.objects.create(

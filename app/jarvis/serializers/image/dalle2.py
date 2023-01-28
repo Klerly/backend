@@ -21,7 +21,8 @@ class Dalle2PromptSellerSerializer(AbstractPromptSellerSerializer):
 class Dalle2PromptBuyerSerializer(AbstractPromptBuyerSerializer):
     size = serializers.ChoiceField(
         choices=Dalle2PromptModel.ImageSizes.values,
-        default=Dalle2PromptModel.ImageSizes.MEDIUM
+        default=Dalle2PromptModel.ImageSizes.MEDIUM,
+        write_only=True
     )
 
     class Meta(AbstractPromptBuyerSerializer.Meta):
