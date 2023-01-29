@@ -2,11 +2,18 @@ from django.db import models
 
 
 class BaseModelManager(models.Manager):
-    def active(self):
-        return self.filter(is_active=True)
+    def active(self, *args, **kwargs):
+        return self.filter(
+            *args,
+            **kwargs,
+            is_active=True
+        )
 
-    def activate(self, *args, **kwargs):
+    def restore(self, *args, **kwargs):
         self.update(is_active=True)
 
-    def deactivate(self, *args, **kwargs):
+    def delete(self, *args, **kwargs):
         self.update(is_active=False)
+
+    def hard_delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)

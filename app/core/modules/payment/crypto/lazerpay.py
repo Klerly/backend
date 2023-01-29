@@ -8,7 +8,7 @@ import requests
 
 class LazerPay(AbstractPayment):
     class URLS:
-        BASE = "https://api.lazerpay.engineering/api/v1/"
+        BASE = "https://api.lazerpay.engineering/api/v1"
         INITIIALIZE = BASE + "/transaction/initialize"
         VERIFY = BASE + "/transaction/verify"
         TRANSFER = BASE + "/transfer"
@@ -52,7 +52,8 @@ class LazerPay(AbstractPayment):
             "customer_email": self.user.email,
             "coin": self.coin,
             "currency": "USD",
-            "amount": transaction.amount
+            "amount": transaction.amount,
+            "reference": transaction.reference,
         }
 
         json_res = self._make_request(

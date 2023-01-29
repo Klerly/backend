@@ -2,6 +2,7 @@ from .base import *
 import os
 
 DEBUG = True
+ENVIRONMET = 'production'
 
 ALLOWED_HOSTS = ['*']
 

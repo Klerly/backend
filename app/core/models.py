@@ -13,3 +13,11 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+
+    def restore(self, *args, **kwargs):
+        self.is_active = True
+        self.save()
+
+    def delete(self, *args, **kwargs):
+        self.is_active = False
+        self.save()

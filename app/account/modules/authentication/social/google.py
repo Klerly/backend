@@ -5,7 +5,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from account.models import User
 import requests
-from . import AbstractSocialProvider
+from .abstract import AbstractSocialProvider
 from rest_framework.exceptions import ValidationError
 
 
