@@ -15,9 +15,9 @@ class WalletModel(BaseModel):
         related_name='wallet'
     )  # type: ignore
     balance = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=Decimal(0.00)
+        max_digits=28,
+        decimal_places=19,
+        default=Decimal(0),
     )  # may be less than 0
 
     def __str__(self):
