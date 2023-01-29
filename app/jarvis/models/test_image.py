@@ -1,7 +1,7 @@
 from django.test import TestCase
 from jarvis.models import (
     Dalle2PromptModel,
-    Dalle2PromptOutputModel
+    PromptOutputModel
 )
 from account.models import User, Seller
 from unittest.mock import patch
@@ -59,12 +59,12 @@ class Dalle2PromptModelTest(TestCase):
         ) as mock:
 
             self.prompt.generate(
-                size="256x256",
+                size=Dalle2PromptModel.ImageSizes.MEDIUM,
                 business_name="Vitamin Group",
                 business_type="provide vitamin supplements"
             )
             mock.assert_called_once_with(
-                size="256x256",
+                size=Dalle2PromptModel.ImageSizes.MEDIUM,
                 user=str(self.user.id),
                 prompt=self.prompt.get_prompt(
                     business_name="Vitamin Group",
@@ -74,7 +74,7 @@ class Dalle2PromptModelTest(TestCase):
                 n=1
             )
 
-            self.assertEqual(Dalle2PromptOutputModel.objects.count(), 1)
+            self.assertEqual(PromptOutputModel.objects.count(), 1)
 
     def test_delete(self):
         self.assertEqual(

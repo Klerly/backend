@@ -2,7 +2,7 @@ from rest_framework import serializers
 from jarvis.models import (
     AbstractPromptModel,
     Dalle2PromptModel,
-    Dalle2PromptOutputModel
+    PromptOutputModel
 )
 from jarvis.serializers.abstract import (
     AbstractPromptSellerSerializer,
@@ -14,7 +14,6 @@ from typing import Optional, Union
 class Dalle2PromptSellerSerializer(AbstractPromptSellerSerializer):
     class Meta(AbstractPromptSellerSerializer.Meta):
         model = Dalle2PromptModel
-        output_model = Dalle2PromptOutputModel
         fields = AbstractPromptSellerSerializer.Meta.fields
 
 

@@ -9,6 +9,10 @@ from account.models import User
 
 
 class AbstractPromptModel(BaseModel):
+    class Names(models.TextChoices):
+        GPT3 = 'gpt3', _('GPT3')
+        DALLE2 = 'dalle2', _('DALLE2')
+
     class Types(models.TextChoices):
         TEXT = 'text', _('Text')
         IMAGE = 'image', _('Image')
@@ -22,10 +26,13 @@ class AbstractPromptModel(BaseModel):
     template_params = models.JSONField()
 
     examples = models.JSONField(null=True, blank=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.DO_NOTHING,
+        related_name="%(app_label)s_%(class)s_related",
+    )
 
     # To be overridden by subclasses
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.DO_NOTHING)
     type = models.CharField(
         max_length=255,
         choices=Types.choices)
@@ -89,12 +96,12 @@ class AbstractPromptModel(BaseModel):
 
     def validate_prompt(self, **kwargs):
         """ Validate that the user input is valid
-        
+
             Args:
                 kwargs (dict): The user input
             Raises:
                 ValidationError: If the user input is invalid
-        
+
         """
         if len(kwargs) != len(self.template_params):
             raise ValidationError("Invalid number of parameters passed")
@@ -157,32 +164,3 @@ class AbstractPromptModel(BaseModel):
 
         super().save(*args, **kwargs)
 
-
-class AbstractPromptOutputModel(BaseModel):
-    # unique id from provider e.g. openai
-    uid = models.CharField(max_length=255)
-    model_input = models.TextField()
-    input = models.JSONField(
-        null=True,
-        blank=True
-    )
-    output = models.TextField()
-    model_snapshot = models.JSONField()
-    cost = models.FloatField()
-
-    # To be overriden by the child class
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.DO_NOTHING)
-    model = models.ForeignKey('self', on_delete=models.DO_NOTHING)
-
-    type = models.CharField(
-        max_length=255,
-        choices=AbstractPromptModel.Types.choices)
-    class Meta:
-        verbose_name = _('Completion')
-        verbose_name_plural = _('Completions')
-        ordering = ('-created_at',)
-        abstract = True
-
-    def __str__(self):
-        return "{} - {}".format(self.user, self.uid)

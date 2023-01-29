@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from jarvis.models import (
     Dalle2PromptModel,
-    Dalle2PromptOutputModel,
+    PromptOutputModel,
 )
 from jarvis.serializers import (
     Dalle2PromptSellerSerializer,
@@ -13,7 +13,7 @@ from jarvis.serializers.abstract import (
 )
 
 from django.test import TestCase
-from jarvis.models import Dalle2PromptOutputModel
+from jarvis.models import PromptOutputModel
 from account.models import User, Seller
 from unittest import mock
 
@@ -48,10 +48,10 @@ class Dalle2PromptSellerSerializerTest(TestCase):
         self.prompt = Dalle2PromptModel.objects.create(
             **self.prompt_data
         )
-        self.output1 = Dalle2PromptOutputModel.objects.create(
+        self.output1 = PromptOutputModel.objects.create(
             uid="id1",  # type: ignore
             user=self.user,
-            model=self.prompt,
+            model_name=self.prompt.name,
             model_input="xxx",
             input={'prompt': 'test prompt 1'},
             output='https://out.put/1/',

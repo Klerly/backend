@@ -3,7 +3,7 @@ from django.test import TestCase
 from jarvis.models import (
     AbstractPromptModel,
     GPT3PromptModel,
-    GPT3PromptOutputModel
+    PromptOutputModel
 )
 from account.models import User, Seller
 from unittest.mock import patch
@@ -97,7 +97,7 @@ class GPT3PromptModelTest(TestCase):
                 stream=False,
             )
 
-            self.assertEqual(GPT3PromptOutputModel.objects.count(), 1)
+            self.assertEqual(PromptOutputModel.objects.count(), 1)
 
     def test_delete(self):
         self.assertEqual(

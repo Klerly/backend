@@ -1,6 +1,6 @@
 from jarvis.models import (
     GPT3PromptModel,
-    GPT3PromptOutputModel
+    PromptOutputModel
 )
 from typing import Union
 from jarvis.serializers.abstract import (
@@ -12,7 +12,6 @@ from jarvis.serializers.abstract import (
 class GPT3PromptSellerSerializer(AbstractPromptSellerSerializer):
     class Meta(AbstractPromptSellerSerializer.Meta):
         model = GPT3PromptModel
-        output_model = GPT3PromptOutputModel
         fields = AbstractPromptSellerSerializer.Meta.fields + (
             'model',
             'max_tokens',

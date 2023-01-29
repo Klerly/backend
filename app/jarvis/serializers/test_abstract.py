@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from jarvis.models import (
-    GPT3PromptOutputModel,
+    PromptOutputModel,
     GPT3PromptModel,
 )
 from typing import List
@@ -8,7 +8,7 @@ from unittest import mock
 
 
 from django.test import TestCase
-from jarvis.models import GPT3PromptOutputModel
+from jarvis.models import PromptOutputModel
 from jarvis.serializers.abstract import (
     AbstractPromptSellerSerializer,
     AbstractPromptBuyerSerializer
@@ -19,12 +19,8 @@ from account.models import User, Seller
 class DummyPromptSellerSerializer(AbstractPromptSellerSerializer):
     class Meta(AbstractPromptSellerSerializer.Meta):
         model = GPT3PromptModel
-        output_model = GPT3PromptOutputModel
 
 
-class NoOutputModelDummyPromptSellerSerializer(AbstractPromptSellerSerializer):
-    class Meta(AbstractPromptSellerSerializer.Meta):
-        model = GPT3PromptModel
 
 
 class AbstractPromptSellerSerializerTest(TestCase):
@@ -54,33 +50,36 @@ class AbstractPromptSellerSerializerTest(TestCase):
             ],
             "user": self.user
         }
-        self.prompt = GPT3PromptModel.objects.create(
+        self.prompt: GPT3PromptModel = GPT3PromptModel.objects.create(
             **self.prompt_data
         )
-        self.output1 = GPT3PromptOutputModel.objects.create(
+        self.output1 = PromptOutputModel.objects.create(
             uid="id1",  # type: ignore
             user=self.user,
-            model=self.prompt,
+            type=self.prompt.type,
+            model_name=self.prompt.name,
             model_input="xxx",
             input={'prompt': 'test prompt 1'},
             output='test output 1',
             cost=0.0,
             model_snapshot={}
         )
-        self.output2 = GPT3PromptOutputModel.objects.create(
+        self.output2 = PromptOutputModel.objects.create(
             uid="id2",  # type: ignore
             user=self.user,
-            model=self.prompt,
+            type=self.prompt.type,
+            model_name=self.prompt.name,
             model_input="xxx",
             input={'prompt': 'test prompt 2'},
             output='test output 2',
             cost=0.0,
             model_snapshot={}
         )
-        self.output3 = GPT3PromptOutputModel.objects.create(
+        self.output3 = PromptOutputModel.objects.create(
             uid="id3",  # type: ignore
             user=self.user,
-            model=self.prompt,
+            type=self.prompt.type,
+            model_name=self.prompt.name,
             model_input="xxx",
             input={'prompt': 'test prompt 3'},
             output='test output 3',
@@ -97,14 +96,7 @@ class AbstractPromptSellerSerializerTest(TestCase):
         )
 
     def test_init(self):
-
-        with self.assertRaises(AssertionError) as context:
-            NoOutputModelDummyPromptSellerSerializer()
-
-        self.assertEqual(
-            str(context.exception),
-            "output_model must be set in the Meta class"
-        )
+        pass
 
     def test_validate_examples_valid(self):
         examples = [self.output2.id, self.output1.id,]
@@ -147,7 +139,7 @@ class AbstractPromptSellerSerializerTest(TestCase):
         prompt_data = self.prompt_data.copy()
         prompt_data.pop('user')
         serializer = DummyPromptSellerSerializer(
-            data=prompt_data,
+            data=prompt_data,  # type: ignore
             context={'request': self.serializer.context['request']}
         )
         self.assertTrue(serializer.is_valid())
@@ -168,7 +160,7 @@ class AbstractPromptSellerSerializerTest(TestCase):
 
             serializer = DummyPromptSellerSerializer(
                 instance=self.prompt,
-                data=prompt_data,
+                data=prompt_data,  # type: ignore
                 context={'request': self.serializer.context['request']}
             )
             self.assertTrue(serializer.is_valid())
@@ -197,7 +189,7 @@ class AbstractPromptSellerSerializerTest(TestCase):
         }]
         serializer = DummyPromptSellerSerializer(
             instance=self.prompt,
-            data=prompt_data,
+            data=prompt_data,  # type:ignore
             context={'request': self.serializer.context['request']}
         )
         self.assertTrue(serializer.is_valid())
@@ -263,7 +255,7 @@ class AbstractPromptBuyerSerializerTestCase(TestCase):
         with self.assertRaises(AssertionError) as context:
             BadModelDummyPromptBuyerSerializer(
                 instance=self.prompt,
-                data=self.prompt_params
+                data=self.prompt_params  # type: ignore
             )
 
         self.assertTrue(
@@ -276,7 +268,7 @@ class AbstractPromptBuyerSerializerTestCase(TestCase):
         with self.assertRaises(AssertionError) as context:
             DummyPromptBuyerSerializer(
                 instance=None,
-                data=self.prompt_params
+                data=self.prompt_params  # type: ignore
             )
 
         self.assertTrue(
@@ -309,7 +301,7 @@ class AbstractPromptBuyerSerializerTestCase(TestCase):
             instance=self.prompt,
             data={
                 'prompt_params': self.prompt_params,
-            },
+            },  # type: ignore
             context={'request': self.serializer.context['request']}
         )
         serializer.is_valid(raise_exception=True)

@@ -1,8 +1,9 @@
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
-from jarvis.models import AbstractPromptModel, AbstractPromptOutputModel
+from jarvis.models import AbstractPromptModel, PromptOutputModel
 from rest_framework.exceptions import ValidationError
+
 
 class Dalle2PromptModel(AbstractPromptModel):
     class ImageSizes(models.TextChoices):
@@ -10,18 +11,12 @@ class Dalle2PromptModel(AbstractPromptModel):
         MEDIUM = '512x512', _('Medium')
         LARGE = '1024x1024', _('Large')
 
+    name = AbstractPromptModel.Names.DALLE2
     type = AbstractPromptModel.Types.IMAGE
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.DO_NOTHING,
-        verbose_name=_('User'),
-        related_name='dalle2_prompts'
-    )
 
-    class Meta:
+    class Meta(AbstractPromptModel.Meta):
         verbose_name = _('Dalle2 Prompt')
         verbose_name_plural = _('Dalle2 Prompts')
-        ordering = ('-created_at',)
 
     def __str__(self):
         return self.heading
@@ -29,7 +24,6 @@ class Dalle2PromptModel(AbstractPromptModel):
     def validate_size(self, size: str):
         if size not in [size for size in self.ImageSizes.values]:
             raise ValidationError("The size you entered is invalid")
-
 
     def generate(
         self,
@@ -55,35 +49,15 @@ class Dalle2PromptModel(AbstractPromptModel):
         model_snapshot.pop("_state", None)
         model_snapshot["created_at"] = model_snapshot["created_at"].isoformat()
         model_snapshot["updated_at"] = model_snapshot["updated_at"].isoformat()
-        Dalle2PromptOutputModel.objects.create(
-            uid=output,  # type: ignore
+        PromptOutputModel.objects.create(
             user=self.user,
-            model_input=prompt,
             input=kwargs or None,
             output=output,
-            model=self,
             cost=0.0,
+            type=self.type,
+            model_name=self.name,
+            model_input=prompt,
             model_snapshot=model_snapshot
         )
 
         return output
-
-
-class Dalle2PromptOutputModel(AbstractPromptOutputModel):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.DO_NOTHING,
-        verbose_name=_('User'),
-        related_name='dalle2_prompt_outputs'
-    )
-    model = models.ForeignKey(
-        Dalle2PromptModel,
-        on_delete=models.DO_NOTHING,
-        related_name='dalle2_prompt_outputs'
-    )
-    type = AbstractPromptModel.Types.IMAGE
-
-    class Meta:
-        verbose_name = _('Dalle2 Output')
-        verbose_name_plural = _('Dalle2 Outputs')
-        ordering = ('-created_at',)

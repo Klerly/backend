@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
-from jarvis.models import AbstractPromptModel, AbstractPromptOutputModel
+from jarvis.models import AbstractPromptModel, PromptOutputModel
 
 
 class GPT3PromptModel(AbstractPromptModel):
@@ -11,13 +11,9 @@ class GPT3PromptModel(AbstractPromptModel):
         BABBAGE_001 = 'text-babbage-001', _('Babbage')
         ADA_001 = 'text-ada-001', _('Ada')
 
+    name = AbstractPromptModel.Names.GPT3
     type = AbstractPromptModel.Types.TEXT
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        verbose_name=_('User'),
-        related_name='language_prompts'
-    )
+
     model = models.CharField(
         max_length=255,
         choices=Models.choices,
@@ -82,36 +78,17 @@ class GPT3PromptModel(AbstractPromptModel):
         model_snapshot.pop("_state", None)
         model_snapshot["created_at"] = model_snapshot["created_at"].isoformat()
         model_snapshot["updated_at"] = model_snapshot["updated_at"].isoformat()
-        GPT3PromptOutputModel.objects.create(
+
+        PromptOutputModel.objects.create(
             uid=response["id"],  # type: ignore
             user=self.user,
-            model_input=prompt,
             input=kwargs or None,
             output=output,
-            model=self,
             cost=0.0,
+            type=self.type,
+            model_name=self.name,
+            model_input=prompt,
             model_snapshot=model_snapshot
         )
 
         return output
-
-
-class GPT3PromptOutputModel(AbstractPromptOutputModel):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        verbose_name=_('User'),
-        related_name='gpt3_prompt_outputs'
-    )
-    model = models.ForeignKey(
-        GPT3PromptModel,
-        on_delete=models.DO_NOTHING,
-        related_name='gpt3_prompt_outputs'
-    )
-
-    type = AbstractPromptModel.Types.TEXT
-
-    class Meta:
-        verbose_name = _('GPT3 Output')
-        verbose_name_plural = _('GPT3 Outputs')
-        ordering = ('-created_at',)

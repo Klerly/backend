@@ -1,13 +1,13 @@
 from rest_framework import serializers
 from jarvis.models import (
     GPT3PromptModel,
-    GPT3PromptOutputModel
+    PromptOutputModel
 )
 from jarvis.serializers import GPT3PromptSellerSerializer, GPT3PromptBuyerSerializer
 from jarvis.serializers.abstract import AbstractPromptSellerSerializer
 
 from django.test import TestCase
-from jarvis.models import GPT3PromptOutputModel
+from jarvis.models import PromptOutputModel
 from account.models import User, Seller
 from unittest import mock
 
@@ -44,10 +44,10 @@ class GPT3PromptSellerSerializerTest(TestCase):
         self.prompt = GPT3PromptModel.objects.create(
             **self.prompt_data
         )
-        self.output1 = GPT3PromptOutputModel.objects.create(
+        self.output1 = PromptOutputModel.objects.create(
             uid="id1",  # type: ignore
             user=self.user,
-            model=self.prompt,
+            model_name=self.prompt.name,
             model_input="xxx",
             input={'prompt': 'test prompt 1'},
             output='test output 1',

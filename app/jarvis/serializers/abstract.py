@@ -1,17 +1,19 @@
 from rest_framework import serializers
 from jarvis.models import (
     AbstractPromptModel,
-    AbstractPromptOutputModel
+    PromptOutputModel
 )
 from typing import List, Type, Optional
 from account.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.fields import empty
 
+
 class AbstractPromptSellerSerializer(serializers.ModelSerializer):
     class Meta:
         model: Type[AbstractPromptModel] = None  # type: ignore
-        output_model: Type[AbstractPromptOutputModel] = None  # type: ignore
+        # type: ignore
+        output_model: Type[PromptOutputModel] = PromptOutputModel
         read_only_fields = (
             'id',
             'created_at',
@@ -37,10 +39,6 @@ class AbstractPromptSellerSerializer(serializers.ModelSerializer):
                 "model must be a subclass of AbstractPromptModel"
             )
 
-        if not self.Meta.output_model:
-            raise AssertionError(
-                "output_model must be set in the Meta class"
-            )
         super().__init__(instance, data, **kwargs)
 
     def validate_examples(self, value):
@@ -70,9 +68,9 @@ class AbstractPromptSellerSerializer(serializers.ModelSerializer):
                 "Examples must be a list of integers"
             )
 
-        prompt_outputs: List[Type[AbstractPromptOutputModel]] = self.Meta.output_model.objects.filter(
+        prompt_outputs: List[Type[PromptOutputModel]] = self.Meta.output_model.objects.filter(
             user=self.context['request'].user,
-            model=self.instance,
+            model_name=self.instance.name,
             id__in=value
         )  # type: ignore
 
