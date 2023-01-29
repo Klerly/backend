@@ -2,7 +2,7 @@ from .base import *
 import os
 
 DEBUG = True
-
+ENVIRONMET = 'local'
 ALLOWED_HOSTS = ['*']
 
 # Database

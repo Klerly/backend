@@ -1,5 +1,6 @@
 from .base import *
 DEBUG = True
+ENVIRONMET = 'test'
 SECRET_KEY = 'test'
 
 ALLOWED_HOSTS = ['*']
