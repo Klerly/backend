@@ -42,6 +42,9 @@ class PromptOutputModel(BaseModel):
                              on_delete=models.DO_NOTHING,
                              related_name="prompt_outputs",
                              )
+    """ User who generated the prompt output"""
+
+
 
     cost = models.FloatField()
     """ Total cost of generating prompt output """
@@ -59,6 +62,14 @@ class PromptOutputModel(BaseModel):
         E.g. "Write a paragraph about John Doe who is 20 years old"
         where the template is "Write a paragraph about {name} who is {age} years old"
     """
+
+    model_user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                   on_delete=models.DO_NOTHING,
+                                   related_name="prompt_outputs_seller_user",
+                                   )
+    """ User who owns the model used to generate the output"""
+
+
     model_snapshot = models.JSONField()
     """ JSON snapshot of the model used to generate the output
         i.e model.__dict__
@@ -77,7 +88,7 @@ class PromptOutputModel(BaseModel):
             "user": 1,
             ...
         }
-"""
+    """
 
     class Meta:
         verbose_name = _('Prompt Output')

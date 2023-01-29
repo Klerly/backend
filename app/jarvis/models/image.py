@@ -57,6 +57,7 @@ class Dalle2PromptModel(AbstractPromptModel):
             type=self.type,
             model_name=self.name,
             model_input=prompt,
+            model_user=self.user,
             model_snapshot=model_snapshot
         )
 

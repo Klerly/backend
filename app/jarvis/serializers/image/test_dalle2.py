@@ -53,6 +53,7 @@ class Dalle2PromptSellerSerializerTest(TestCase):
             user=self.user,
             model_name=self.prompt.name,
             model_input="xxx",
+            model_user=self.user,
             input={'prompt': 'test prompt 1'},
             output='https://out.put/1/',
             cost=0.0,

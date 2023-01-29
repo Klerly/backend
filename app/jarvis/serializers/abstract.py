@@ -182,10 +182,11 @@ class AbstractPromptBuyerSerializer(serializers.ModelSerializer):
                 """
                 restricted_fields must not appear in the fields list
 
-                To solve this issue, remove the following from the Meta class:
+                 To solve this issue, remove the following from the {} Meta class:
 
                 "{}"
                 """.format(
+                    self.__class__.__name__,
                     ", ".join(self.Meta.restricted_fields)
                 )
             )

@@ -39,10 +39,9 @@ class GPT3PromptModel(AbstractPromptModel):
         default=""
     )
 
-    class Meta:
+    class Meta(AbstractPromptModel.Meta):
         verbose_name = _('GPT3 Prompt')
         verbose_name_plural = _('GPT3 Prompts')
-        ordering = ('-created_at',)
 
     def __str__(self):
         return self.heading
@@ -88,6 +87,7 @@ class GPT3PromptModel(AbstractPromptModel):
             type=self.type,
             model_name=self.name,
             model_input=prompt,
+            model_user=self.user,
             model_snapshot=model_snapshot
         )
 

@@ -12,6 +12,11 @@ from jarvis.apis.language.gpt3 import (
     GPT3PromptBuyerRetrieveAPIView
 )
 
+from jarvis.apis.output import (
+    PromptOutputListAPIView,
+    PromptOutputRetrieveAPIView
+)
+
 
 app_name = 'jarvis'
 urlpatterns = [
@@ -40,4 +45,10 @@ urlpatterns = [
          name='dalle2-prompt-buyer-detail'
          ),
 
+    path('output', PromptOutputListAPIView.as_view(),
+         name='prompt-output-list'
+         ),
+    path('output/<int:pk>', PromptOutputRetrieveAPIView.as_view(),
+         name='prompt-output-detail'
+         ),
 ]
