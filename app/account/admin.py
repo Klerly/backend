@@ -1,5 +1,5 @@
 from django.contrib.auth.admin import UserAdmin
-from account.models import User
+from account.models import User, Seller
 from django.contrib import admin
 from account.models import EmailTokenVerificationModel, ResetPasswordTokenVerificationModel
 
@@ -7,3 +7,4 @@ from account.models import EmailTokenVerificationModel, ResetPasswordTokenVerifi
 admin.site.register(EmailTokenVerificationModel)
 admin.site.register(ResetPasswordTokenVerificationModel)
 admin.site.register(User, UserAdmin)
+admin.site.register(Seller)
