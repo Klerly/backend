@@ -31,7 +31,7 @@ class CryptoWalletPaymentTest(TestCase):
             amount=1000,
             status=TransactionModel.Status.PENDING
         )
-        wallet = WalletModel.objects.create(user=self.user)
+        wallet = self.user.wallet  # type: ignore
         response = self.payment._success(transaction)  # type: ignore
         self.assertEqual(
             response, {"status": True, "message": "Payment successful"})

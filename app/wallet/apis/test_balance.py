@@ -15,10 +15,17 @@ class WalletBalanceAPITestCase(TestCase):
             is_verified=True
 
         )
-        self.wallet = WalletModel.objects.create(
-            balance=112221000.12345678912345, user=self.user)
+        self.wallet = self.user.wallet
 
     def test_get_balance(self):
+        self.client.force_authenticate(user=self.user)  # type: ignore
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {
+            'balance': 0
+        })
+
+    def test_get_updated_balance(self):
         """ Test that a user can get their balance
 
             Note: https://docs.djangoproject.com/en/4.1/ref/databases/#sqlite-decimal-handling
@@ -28,6 +35,9 @@ class WalletBalanceAPITestCase(TestCase):
             the SQLite datatypes documentation, so they dont support 
             correctly-rounded decimal floating point arithmetic.
         """
+        self.wallet.balance = Decimal(112221000.12345678912345)
+        self.wallet.save()
+
         self.client.force_authenticate(user=self.user)  # type: ignore
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)

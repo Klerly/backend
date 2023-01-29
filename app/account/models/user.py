@@ -98,14 +98,14 @@ class Seller(BaseModel):
 
     """ Seller's finalised earnings """
     earnings = models.DecimalField(
-        max_digits=10, decimal_places=10,
-        default=Decimal(0.00),
+        max_digits=28, decimal_places=19,
+        default=Decimal(0),
         verbose_name=_('Earnings')
     )
     """ Seller's pending earnings """
     pending_earnings = models.DecimalField(
-        max_digits=10, decimal_places=10,
-        default=Decimal(0.00),
+        max_digits=28, decimal_places=19,
+        default=Decimal(0),
         verbose_name=_('Pending Earnings')
     )
 

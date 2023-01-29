@@ -20,7 +20,7 @@ class CryptoPaymentInitializeAPITestCase(TestCase):
             password='password',
             is_verified=True
         )
-        self.wallet = WalletModel.objects.create(user=self.user)
+        self.wallet = self.user.wallet
         self.url = reverse('wallet:payment-crypto-initialize')
         self.data = {'amount': 100}
 
@@ -55,7 +55,7 @@ class CryptoPaymentVerifyAPITestCase(TestCase):
             password='password',
             is_verified=True
         )
-        self.wallet = WalletModel.objects.create(user=self.user)
+        self.wallet = self.user.wallet
         self.transaction = TransactionModel.objects.create(
             user=self.user,
             reference='123',

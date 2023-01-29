@@ -92,7 +92,7 @@ class FiatWalletPaymentTest(TestCase):
                 "signature": "SIG_abcdef",
             }
         }
-        wallet = WalletModel.objects.create(user=self.user)
+        wallet = self.user.wallet  # type: ignore
         with patch.object(FiatWalletPayment, '_add_card') as mock_add_card:
             response = self.payment._success(transaction, data)  # type: ignore
             mock_add_card.assert_called_once_with(data)
