@@ -13,6 +13,7 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ('-created_at',)
 
     def restore(self, *args, **kwargs):
         self.is_active = True
