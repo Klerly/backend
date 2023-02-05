@@ -38,7 +38,7 @@ class TransactionListAPITestCase(TestCase):
         view.kwargs = {'pk': self.transaction1.reference}
         queryset = view.get_queryset()
         self.assertEqual(queryset.count(), 2)
-        self.assertEqual(queryset.first(), self.transaction1)
+        self.assertEqual(queryset.last(), self.transaction1)
 
     def test_get_queryset_different_user(self):
         user2 = User.objects.create_user(  # type: ignore
@@ -90,7 +90,7 @@ class TransactionRetrieveAPITestCase(TestCase):
         view.kwargs = {'pk': self.transaction1.reference}
         queryset = view.get_queryset()
         self.assertEqual(queryset.count(), 2)
-        self.assertEqual(queryset.first(), self.transaction1)
+        self.assertEqual(queryset.last(), self.transaction1)
 
     def test_get_queryset_different_user(self):
         user2 = User.objects.create_user(  # type: ignore
