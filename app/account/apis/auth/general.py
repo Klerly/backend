@@ -69,7 +69,7 @@ class SendVerificationEmailAPI(APIView):
             raise HttpValidationError("This account is already verified")
 
         AccountMailTemplate.VerifyEmail(user).send()
-        return SuccessResponse('A verification email has been sent to you. If you can\'t find it, please check your spam folder.')
+        return SuccessResponse('A verification email has been sent to you. \nIf you can\'t find it, please check your spam folder.')
 
 
 class CheckVerificationEmailTokenAPI(APIView):
@@ -87,18 +87,18 @@ class CheckVerificationEmailTokenAPI(APIView):
             token_obj: EmailTokenVerificationModel = user.email_token_verification  # type: ignore
         except EmailTokenVerificationModel.DoesNotExist:
             raise HttpValidationError(
-                'The token you entered is not valid. Please enter a valid one or request a new one'
+                'The token you entered is not valid. \nPlease enter a valid one or request a new one'
             )
 
         if not token_obj.is_valid(token):  # type: ignore
             raise HttpValidationError(
-                'The token you entered is invalid or may have expired. Please enter a valid one or request a new one'
+                'The token you entered is invalid or may have expired. \nPlease enter a valid one or request a new one'
             )
 
         token_obj.delete()
         user.verify()
         return SuccessResponse(
-            'Yay, your account has been verified. Sign in to continue'
+            'Your account has been verified'
         )
 
 
@@ -127,7 +127,7 @@ class SendResetPasswordEmailAPI(APIView):
 
         AccountMailTemplate.ResetPassword(user).send()
         return SuccessResponse(
-            'A reset password email has been sent to you. If you can\'t find it, please make sure to check your spam folder.'
+            'A reset password email has been sent to you. \nIf you can\'t find it, please make sure to check your spam folder.'
         )
 
 
@@ -138,7 +138,7 @@ class CheckResetPasswordEmailTokenAPI(APIView):
     def get(self, request, *args, **kwargs):
         self.__check(request)
         return SuccessResponse(
-            'Yay, your reset password token is valid. Please proceed to reset your password'
+            'Your reset password token is valid. \nPlease proceed to reset your password'
         )
 
     def post(self, request, *args, **kwargs):
@@ -159,7 +159,7 @@ class CheckResetPasswordEmailTokenAPI(APIView):
         user.save()
 
         return SuccessResponse(
-            'Your password has been reset successfully. Please sign in to continue'
+            'Your password has been reset successfully. \nPlease sign in to continue'
         )
 
     def __check(self, request: HttpRequest):
@@ -171,17 +171,17 @@ class CheckResetPasswordEmailTokenAPI(APIView):
             user: User = get_user_model().objects.get(email=email)  # type: ignore
         except User.DoesNotExist:
             raise HttpValidationError(
-                'Unfortunately, we couldn\'t find a user with this email address'
+                'We couldn\'t find a user with this email address'
             )
         try:
             token_obj: ResetPasswordTokenVerificationModel = user.reset_password_token_verification  # type: ignore
         except ResetPasswordTokenVerificationModel.DoesNotExist:
             raise HttpValidationError(
-                'The reset password token is invalid. Please enter a valid one or request a new one'
+                'The reset password token is invalid. \nPlease enter a valid one or request a new one'
             )
         if not token_obj.is_valid(token):  # type: ignore
             raise HttpValidationError(
-                'The reset password token is invalid. Please enter a valid one or request a new one'
+                'The reset password token is invalid. \nPlease enter a valid one or request a new one'
             )
 
         return user, token_obj
