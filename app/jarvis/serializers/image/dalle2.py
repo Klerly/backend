@@ -29,8 +29,3 @@ class Dalle2PromptBuyerSerializer(AbstractPromptBuyerSerializer):
         fields = AbstractPromptBuyerSerializer.Meta.fields + (
             'size',
         )
-
-    def generate(self) -> str:
-        instance: Union[Dalle2PromptModel,
-                        AbstractPromptModel] = self.instance  # type: ignore
-        return instance.generate(**self.validated_data)  # type: ignore

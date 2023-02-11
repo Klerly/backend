@@ -11,6 +11,7 @@ from jarvis.serializers.language.gpt3 import (
     GPT3PromptSellerSerializer,
     GPT3PromptBuyerSerializer
 )
+from jarvis.apis.common.views.GeneratePromptAPIView import GenerateAPIView
 from rest_framework import filters
 
 
@@ -59,5 +60,11 @@ class GPT3PromptBuyerRetrieveAPIView(RetrieveAPIView):
     """ Retrieve a prompt available
         to be bought by the buyer
     """
+    queryset = GPT3PromptModel.objects.active_for_buyer()
+    serializer_class = GPT3PromptBuyerSerializer
+
+
+class GPT3PromptGeneratorAPIView(GenerateAPIView):
+    """ Generate a prompt using the GPT3 API"""
     queryset = GPT3PromptModel.objects.active_for_buyer()
     serializer_class = GPT3PromptBuyerSerializer

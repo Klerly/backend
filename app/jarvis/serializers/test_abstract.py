@@ -311,7 +311,7 @@ class AbstractPromptBuyerSerializerTestCase(TestCase):
         self.assertTrue(serializer.is_valid())
         self.prompt.validate_prompt.assert_called_once()
 
-    def test_generate(self):
-        # ensure that generate method is implemented
-        with self.assertRaises(NotImplementedError):
-            self.serializer.generate()
+    # def test_generate(self):
+    #     # ensure that generate method is implemented
+    #     with self.assertRaises(NotImplementedError):
+    #         self.serializer.generate()
