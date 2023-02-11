@@ -122,6 +122,7 @@ class AbstractPromptBuyerSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
             'heading',
+            'name',
             'description',
             'created_at',
             'updated_at',
