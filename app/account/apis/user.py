@@ -12,14 +12,12 @@ from rest_framework.generics import (
     ListAPIView,
     CreateAPIView,
     RetrieveAPIView,
-    ListCreateAPIView,
     RetrieveUpdateAPIView
 )
 from rest_framework.permissions import IsAuthenticated
 from typing import List, Any
 from account.models import User, Seller
 from rest_framework import filters
-from django.core.exceptions import ObjectDoesNotExist
 
 
 class UserAPI(APIView):
@@ -33,7 +31,7 @@ class UserAPI(APIView):
         return SuccessResponse(data)
 
 
-class PublicListCreateAPI(ListCreateAPIView):
+class PublicSellerListAPI(ListAPIView):
     """ List all sellers 
 
         This API is public and does not require authentication.

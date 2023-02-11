@@ -4,7 +4,7 @@ from account.apis.user import (
     UserAPI,
     SellerCreateAPI,
     SellerRetrieveUpdateAPI,
-    PublicListCreateAPI,
+    PublicSellerListAPI,
     PublicSellerRetrieveAPI
 )
 
@@ -38,7 +38,7 @@ urlpatterns = [
     path('user/seller/me', SellerRetrieveUpdateAPI.as_view(),
          name='account-seller-detail'),
 
-    path('seller', PublicListCreateAPI.as_view(),
+    path('seller', PublicSellerListAPI.as_view(),
          name='account-public-seller-list'),
     path('seller/<str:handle>', PublicSellerRetrieveAPI.as_view(),
          name='account-public-seller-detail'),

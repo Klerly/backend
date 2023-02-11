@@ -13,7 +13,7 @@ from account.apis.user import (
     SellerRetrieveUpdateAPI,
     SellerCreateAPI,
     PublicSellerRetrieveAPI,
-    PublicListCreateAPI,
+    PublicSellerListAPI,
 
 )
 from rest_framework.permissions import IsAuthenticated
@@ -154,13 +154,13 @@ class PublicSellerAPITestCase(TestCase):
 
     def test_permission_classes_used(self):
         self.assertEqual(PublicSellerRetrieveAPI.permission_classes, [])
-        self.assertEqual(PublicListCreateAPI.permission_classes, [])
+        self.assertEqual(PublicSellerListAPI.permission_classes, [])
 
     def test_serializer_class(self):
         self.assertEqual(
             PublicSellerRetrieveAPI.serializer_class, PublicSellerSerializer)
         self.assertEqual(
-            PublicListCreateAPI.serializer_class, PublicSellerSerializer)
+            PublicSellerListAPI.serializer_class, PublicSellerSerializer)
 
     def test_retrieve(self):
         response = self.client.get(self.detail_url)
