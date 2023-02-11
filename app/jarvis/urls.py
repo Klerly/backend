@@ -3,13 +3,15 @@ from jarvis.apis.image.dalle2 import (
     Dalle2PromptSellerListCreateAPIView,
     Dalle2PromptSellerRetrieveUpdateDestroyAPIView,
     Dalle2PromptBuyerListAPIView,
-    Dalle2PromptBuyerRetrieveAPIView
+    Dalle2PromptBuyerRetrieveAPIView,
+    Dalle2PromptGeneratorAPIView
 )
 from jarvis.apis.language.gpt3 import (
     GPT3PromptSellerListCreateAPIView,
     GPT3PromptSellerRetrieveUpdateDestroyAPIView,
     GPT3PromptBuyerListAPIView,
-    GPT3PromptBuyerRetrieveAPIView
+    GPT3PromptBuyerRetrieveAPIView,
+    GPT3PromptGeneratorAPIView
 )
 
 from jarvis.apis.output import (
@@ -32,6 +34,9 @@ urlpatterns = [
     path('language/gpt3/<int:pk>', GPT3PromptBuyerRetrieveAPIView.as_view(),
          name='gpt3-prompt-buyer-detail'
          ),
+    path('language/gpt3/generate/<int:pk>', GPT3PromptGeneratorAPIView.as_view(),
+         name='gpt3-prompt-generator'
+         ),
     path('image/dalle2/seller', Dalle2PromptSellerListCreateAPIView.as_view(),
          name='dalle2-prompt-seller-create'
          ),
@@ -45,6 +50,9 @@ urlpatterns = [
          name='dalle2-prompt-buyer-detail'
          ),
 
+    path('image/dalle2/generate/<int:pk>', Dalle2PromptGeneratorAPIView.as_view(),
+         name='dalle2-prompt-generator'
+         ),
     path('output', PromptOutputListAPIView.as_view(),
          name='prompt-output-list'
          ),

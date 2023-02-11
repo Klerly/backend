@@ -166,8 +166,20 @@ class GPT3PromptBuyerSerializerTest(TestCase):
         )
         self.assertTrue(serializer.is_valid())
         with mock.patch.object(GPT3PromptModel, 'generate') as mock_generate:
-            mock_generate.return_value = 'test output 1'
-            self.assertEqual(serializer.generate(), 'test output 1')
+            mock_generate.return_value = PromptOutputModel.objects.create(
+                uid="fake-uid",  # type: ignore
+                user=self.user,
+                input=None,
+                output="test output 1",
+                cost=0.0,
+                type=self.prompt.type,
+                model_name="fake-name",
+                model_input={},
+                model_user=self.user,
+                model_snapshot={}
+            )
+            serializedOutput = serializer.generate()
+            self.assertEqual(serializedOutput["output"], 'test output 1')
             mock_generate.assert_called_once_with(
-                **data,
+                **data["prompt_params"],
             )

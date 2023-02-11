@@ -19,7 +19,7 @@ class AbstractPromptModel(BaseModel):
 
     objects = PromptModelManager()
 
-    icon = models.URLField(max_length=255)
+    icon = models.URLField(max_length=255, default="https://icon.ico")
     heading = models.CharField(max_length=255)
     description = models.TextField()
     template = models.TextField()
@@ -108,7 +108,8 @@ class AbstractPromptModel(BaseModel):
 
         for kwarg in kwargs:
             if kwarg not in [param["name"] for param in self.template_params]:
-                raise ValidationError("Invalid parameter passed")
+                raise ValidationError(
+                    "Invalid parameter passed.\n \"{}\" is not a valid parameter".format(kwarg))
 
     def validate_template(self):
         for param in self.template_params:

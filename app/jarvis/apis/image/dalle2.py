@@ -11,6 +11,8 @@ from jarvis.serializers.image.dalle2 import (
     Dalle2PromptSellerSerializer,
     Dalle2PromptBuyerSerializer
 )
+
+from jarvis.apis.common.views.GeneratePromptAPIView import GenerateAPIView
 from rest_framework import filters
 
 
@@ -49,5 +51,11 @@ class Dalle2PromptBuyerListAPIView(ListAPIView):
 
 
 class Dalle2PromptBuyerRetrieveAPIView(RetrieveAPIView):
+    queryset = Dalle2PromptModel.objects.active_for_buyer()
+    serializer_class = Dalle2PromptBuyerSerializer
+
+
+class Dalle2PromptGeneratorAPIView(GenerateAPIView):
+    """ Generate a prompt using the GPT3 API"""
     queryset = Dalle2PromptModel.objects.active_for_buyer()
     serializer_class = Dalle2PromptBuyerSerializer

@@ -1,4 +1,3 @@
-from rest_framework import serializers
 from jarvis.models import (
     Dalle2PromptModel,
     PromptOutputModel,
@@ -8,8 +7,7 @@ from jarvis.serializers import (
     Dalle2PromptBuyerSerializer,
 )
 from jarvis.serializers.abstract import (
-    AbstractPromptSellerSerializer,
-    AbstractPromptBuyerSerializer
+    AbstractPromptSellerSerializer
 )
 
 from django.test import TestCase
@@ -169,10 +167,22 @@ class Dalle2PromptBuyerSerializerTest(TestCase):
         )
         self.assertTrue(serializer.is_valid())
         with mock.patch.object(Dalle2PromptModel, 'generate') as mock_generate:
-            mock_generate.return_value = 'test output 1'
-            self.assertEqual(serializer.generate(), 'test output 1')
+            mock_generate.return_value = PromptOutputModel.objects.create(
+                uid="fake-uid",  # type: ignore
+                user=self.user,
+                input=None,
+                output="test output 1",
+                cost=0.0,
+                type=self.prompt.type,
+                model_name="fake-name",
+                model_input={},
+                model_user=self.user,
+                model_snapshot={}
+            )
+            serializedOutput = serializer.generate()
+            self.assertEqual(serializedOutput["output"], 'test output 1')
             mock_generate.assert_called_once_with(
-                **data,
+                **data.pop("prompt_params"),
                 size=Dalle2PromptModel.ImageSizes.MEDIUM
             )
 
@@ -187,8 +197,21 @@ class Dalle2PromptBuyerSerializerTest(TestCase):
         )
         self.assertTrue(serializer.is_valid())
         with mock.patch.object(Dalle2PromptModel, 'generate') as mock_generate:
-            mock_generate.return_value = 'test output 1'
-            self.assertEqual(serializer.generate(), 'test output 1')
+            mock_generate.return_value = PromptOutputModel.objects.create(
+                uid="fake-uid",  # type: ignore
+                user=self.user,
+                input=None,
+                output="test output 1",
+                cost=0.0,
+                type=self.prompt.type,
+                model_name="fake-name",
+                model_input={},
+                model_user=self.user,
+                model_snapshot={}
+            )
+            serializedOutput = serializer.generate()
+            self.assertEqual(serializedOutput["output"], 'test output 1')
             mock_generate.assert_called_once_with(
-                **data,
+                **data.pop("prompt_params"),
+                **data
             )

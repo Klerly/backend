@@ -29,7 +29,7 @@ class Dalle2PromptModel(AbstractPromptModel):
         self,
         size: ImageSizes = ImageSizes.MEDIUM,
         **kwargs
-    ) -> str:
+    ) -> PromptOutputModel:
 
         self.validate_size(size)
 
@@ -49,7 +49,7 @@ class Dalle2PromptModel(AbstractPromptModel):
         model_snapshot.pop("_state", None)
         model_snapshot["created_at"] = model_snapshot["created_at"].isoformat()
         model_snapshot["updated_at"] = model_snapshot["updated_at"].isoformat()
-        PromptOutputModel.objects.create(
+        outputModel = PromptOutputModel.objects.create(
             user=self.user,
             input=kwargs or None,
             output=output,
@@ -61,4 +61,4 @@ class Dalle2PromptModel(AbstractPromptModel):
             model_snapshot=model_snapshot
         )
 
-        return output
+        return outputModel

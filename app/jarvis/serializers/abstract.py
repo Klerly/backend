@@ -3,13 +3,17 @@ from jarvis.models import (
     AbstractPromptModel,
     PromptOutputModel
 )
-from typing import List, Type, Optional
+from typing import List, Type, Dict, Union,Any
 from account.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.fields import empty
-
+from jarvis.serializers.output import PromptOutputSerializer
 
 class AbstractPromptSellerSerializer(serializers.ModelSerializer):
+    template_params = serializers.JSONField(
+        required=False,
+        default={},
+    )
     class Meta:
         model: Type[AbstractPromptModel] = None  # type: ignore
         # type: ignore
@@ -109,7 +113,7 @@ class AbstractPromptSellerSerializer(serializers.ModelSerializer):
 
 class AbstractPromptBuyerSerializer(serializers.ModelSerializer):
     prompt_params = serializers.JSONField(
-        required=True,
+        required=False,
         write_only=True
     )
 
@@ -155,7 +159,7 @@ class AbstractPromptBuyerSerializer(serializers.ModelSerializer):
                 "model must be a subclass of AbstractPromptModel"
             )
 
-        if not instance:
+        if not instance and data is not empty:
             raise AssertionError(
                 "instance must be set during initialization"
             )
@@ -204,10 +208,18 @@ class AbstractPromptBuyerSerializer(serializers.ModelSerializer):
         instance.validate_prompt(**params)
         return params
 
-    def generate(self) -> str:
+    def generate(self) -> Dict[str, Any]:
         """ Generate a prompt output
         """
-        raise NotImplementedError
+        instance: AbstractPromptModel = self.instance  # type: ignore
+        prompt_params: Dict[str, Union[str, int]] = {}
+        if self.validated_data:
+            prompt_params = self.validated_data.pop(  # type: ignore
+                'prompt_params', {}) or {}
+
+        outputModel = instance.generate(**prompt_params, **self.validated_data)
+        return PromptOutputSerializer(outputModel).data
+
 
     def create(self, validated_data):
         """ This should never be called"""
