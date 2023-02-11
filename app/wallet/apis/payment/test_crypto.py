@@ -67,13 +67,35 @@ class CryptoPaymentVerifyAPITestCase(TestCase):
 
     @patch('wallet.modules.payment.crypto.CryptoWalletPayment.verify')
     def test_verify_payment_success(self, mock_verify):
-        mock_verify.return_value = {'status': 'success'}
+        mock_verify_return_value = {
+            'status': True,
+            'message': 'Payment successful'
+        }
+        mock_verify.return_value = mock_verify_return_value
         self.client.force_authenticate(user=self.user)  # type: ignore
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {'status': 'success'})  # type: ignore
+        self.assertEqual(
+            response.data,  # type: ignore
+            mock_verify_return_value)
         mock_verify.assert_called_once_with(self.transaction)
+
+    @patch('wallet.modules.payment.crypto.CryptoWalletPayment.verify')
+    def test_verify_payment_failure(self, mock_verify):
+        mock_verify_return_value = {
+            'status': False,
+            'message': 'We have not received your payment'
+        }
+        mock_verify.return_value = mock_verify_return_value
+        self.client.force_authenticate(user=self.user)  # type: ignore
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 400)
+        mock_verify.assert_called_once_with(self.transaction)
+
+
+
 
     def test_verify_payment_not_found(self):
         url = reverse('wallet:payment-crypto-verify', args=['invalid'])
@@ -86,17 +108,16 @@ class CryptoPaymentVerifyAPITestCase(TestCase):
             {'non_field_errors': ['Transaction not found']}
         )
 
-    def test_verify_payment_already_completed(self):
+    @patch('wallet.modules.payment.crypto.CryptoWalletPayment.verify')
+    def test_verify_payment_already_completed(self, mock_verify):
         self.transaction.status = TransactionModel.Status.SUCCESS
         self.transaction.save()
         self.client.force_authenticate(user=self.user)  # type: ignore
         response = self.client.get(self.url)
 
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.data,  # type: ignore
-            {'non_field_errors': ['Transaction already completed']}
-        )
+        self.assertEqual(response.status_code, 200)
+        mock_verify.assert_not_called()
+
 
     def test_verify_payment_unauthenticated(self):
         response = self.client.get(self.url)
