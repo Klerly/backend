@@ -12,6 +12,20 @@ class CryptoWalletPayment:
         return LazerPay(user)
 
     def _success(self, transaction: TransactionModel):
+        """ This method is called when a transaction is successful
+
+            Args:
+                transaction (TransactionModel): The transaction model
+
+            Returns:
+                dict: A dictionary containing the status and message
+                Example:
+                    {
+                        "status": True,
+                        "message": "Payment successful"
+                    }
+
+        """
         if transaction.status != TransactionModel.Status.SUCCESS:
             transaction.status = TransactionModel.Status.SUCCESS
             transaction.save()
@@ -24,6 +38,21 @@ class CryptoWalletPayment:
         }
 
     def _failed(self, transaction: TransactionModel):
+        """ This method is called when a transaction is failed
+        
+            Args:
+                
+                transaction (TransactionModel): The transaction model
+                
+            Returns:
+                dict: A dictionary containing the status and message
+                Example:
+                    {
+                        "status": False,
+                        "message": "Payment failed"
+                    }
+        """
+
         if transaction.status != TransactionModel.Status.SUCCESS:
             transaction.status = TransactionModel.Status.PENDING
             transaction.save()

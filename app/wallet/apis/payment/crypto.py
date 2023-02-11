@@ -35,11 +35,17 @@ class CryptoPaymentVerifyAPI(APIView):
                 "Transaction not found"
             )
         if transaction.status == TransactionModel.Status.SUCCESS:
-            raise HttpValidationError(
-                "Transaction already completed"
-            )
+            data = {
+                "status": True,
+                "message": "We have received your payment"
+            }
+            return SuccessResponse(data)
         data = CryptoWalletPayment(request.user).verify(transaction)
-        return SuccessResponse(data)
+        if data["status"] == True:
+            return SuccessResponse(data)
+        raise HttpValidationError(
+            "We have not received your payment"
+        )
 
 
 class CryptoPaymentWebhookAPI(APIView):
