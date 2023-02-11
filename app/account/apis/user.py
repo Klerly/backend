@@ -33,7 +33,7 @@ class UserAPI(APIView):
         return SuccessResponse(data)
 
 
-class PublicSellerListCreateAPI(ListCreateAPIView):
+class PublicListCreateAPI(ListCreateAPIView):
     """ List all sellers 
 
         This API is public and does not require authentication.
