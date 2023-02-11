@@ -20,6 +20,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class SellerSerializer(serializers.ModelSerializer):
+    pending_earnings = serializers.SerializerMethodField()
+    earnings = serializers.SerializerMethodField()
     class Meta:
         model = Seller
         read_only_fields = (
@@ -33,6 +35,12 @@ class SellerSerializer(serializers.ModelSerializer):
             'name',
             'about',
         )
+
+    def get_pending_earnings(self, obj):
+        return round(obj.pending_earnings, 2)
+
+    def get_earnings(self, obj):
+        return round(obj.earnings, 2)
 
     def validate_handle(self, value):
         import re
