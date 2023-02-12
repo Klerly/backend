@@ -63,7 +63,8 @@ class AbstractPromptSellerSerializerTest(TestCase):
             input={'prompt': 'test prompt 1'},
             output='test output 1',
             cost=0.0,
-            model_snapshot={}
+            model_snapshot={"description": "test description"}
+
         )
         self.output2 = PromptOutputModel.objects.create(
             uid="id2",  # type: ignore
@@ -75,7 +76,8 @@ class AbstractPromptSellerSerializerTest(TestCase):
             input={'prompt': 'test prompt 2'},
             output='test output 2',
             cost=0.0,
-            model_snapshot={}
+            model_snapshot={"description": "test description"}
+
         )
         self.output3 = PromptOutputModel.objects.create(
             uid="id3",  # type: ignore
@@ -87,7 +89,8 @@ class AbstractPromptSellerSerializerTest(TestCase):
             input={'prompt': 'test prompt 3'},
             output='test output 3',
             cost=0.0,
-            model_snapshot={}
+            model_snapshot={"description": "test description"}
+
         )
 
         request = type('Request', (object,), {

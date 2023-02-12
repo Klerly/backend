@@ -8,6 +8,7 @@ from account.serializers.user import PublicSellerSerializer
 
 class PromptOutputSerializer(serializers.ModelSerializer):
     seller = serializers.SerializerMethodField()
+    description = serializers.CharField(source="model_snapshot.description")
 
     class Meta:
         model = PromptOutputModel
@@ -19,6 +20,7 @@ class PromptOutputSerializer(serializers.ModelSerializer):
             "model_name",
             "type",
             "seller",
+            "description",
         )
         fields = read_only_fields
         restricted_fields = (
