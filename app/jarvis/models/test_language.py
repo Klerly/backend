@@ -78,6 +78,7 @@ class GPT3PromptModelTest(TestCase):
 
         ) as mock:
             self.prompt.generate(
+                user=self.user,
                 business_name="Vitamin Group",
                 business_type="We provide vitamin supplements"
             )

@@ -59,6 +59,7 @@ class Dalle2PromptModelTest(TestCase):
         ) as mock:
 
             self.prompt.generate(
+                user=self.user,
                 size=Dalle2PromptModel.ImageSizes.MEDIUM,
                 business_name="Vitamin Group",
                 business_type="provide vitamin supplements"

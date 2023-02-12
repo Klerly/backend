@@ -112,6 +112,18 @@ class AbstractPromptModel(BaseModel):
                     "Invalid parameter passed.\n \"{}\" is not a valid parameter".format(kwarg))
 
     def validate_template(self):
+        # Check that the template_params is a list
+        if not isinstance(self.template_params, list):
+            raise ValidationError(
+                'The template parameters must be a list. Ensure that the input has the format [{"name": "name", "description": "text description"}]'
+            )
+
+        # Check that the template_params is a list of dicts
+        if not all(isinstance(param, dict) for param in self.template_params):
+            raise ValidationError(
+                'The template parameters must be a list of dicts. Ensure that the input has the format [{"name": "name", "description": "text description"}]'
+            )
+
         for param in self.template_params:
             if "name" not in param:
                 raise ValidationError(
@@ -121,6 +133,23 @@ class AbstractPromptModel(BaseModel):
                 raise ValidationError(
                     'The template parameter is missing the "description" key. Ensure that the input has the format {{ "name": "Sample Name", "description": "text description" }}'
                 )
+
+        import re
+        matches = re.findall(r"{(.*?)}", self.template)
+        if matches:
+            for match in matches:
+                if match not in [param["name"] for param in self.template_params]:
+                    if " " in match:
+                        raise ValidationError(
+                            'The template parameter "{}" has an invalid white space. Ensure that the input has the format "{{{}}}"'.format(
+                                match, match
+                            )
+                        )
+                    raise ValidationError(
+                        'The template parameter is missing the "{}" key. Ensure that the input has the format {{ "name": "Sample name", "description": "text description" }}'.format(
+                            match
+                        )
+                    )
 
         for param in self.template_params:
             name = param["name"]
@@ -144,12 +173,12 @@ class AbstractPromptModel(BaseModel):
                     )
                 )
 
-    def generate(self, **kwargs) -> str:
+    def generate(self, user: User, **kwargs) -> models.Model:
         """ Generate a prompt from the template and the user input
             Args:
                 kwargs (dict): The user input
             Returns:
-                str: The generated prompt text or url
+                PromptOutputModel: The generated prompt
         """
         raise NotImplementedError
 
@@ -164,4 +193,3 @@ class AbstractPromptModel(BaseModel):
                 )
 
         super().save(*args, **kwargs)
-

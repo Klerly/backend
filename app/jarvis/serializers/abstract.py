@@ -10,9 +10,10 @@ from rest_framework.fields import empty
 from jarvis.serializers.output import PromptOutputSerializer
 
 class AbstractPromptSellerSerializer(serializers.ModelSerializer):
+    is_seller_active = serializers.SerializerMethodField()
     template_params = serializers.JSONField(
         required=False,
-        default={},
+        default=[],
     )
     class Meta:
         model: Type[AbstractPromptModel] = None  # type: ignore
@@ -22,6 +23,9 @@ class AbstractPromptSellerSerializer(serializers.ModelSerializer):
             'id',
             'created_at',
             'updated_at',
+            'is_active',
+            'is_seller_active',
+            'name'
         )
         fields = read_only_fields + (
             'icon',
@@ -44,6 +48,9 @@ class AbstractPromptSellerSerializer(serializers.ModelSerializer):
             )
 
         super().__init__(instance, data, **kwargs)
+
+    def get_is_seller_active(self, obj):
+        return obj.user.seller_profile.is_active
 
     def validate_examples(self, value):
         """ Validate the examples field
@@ -217,8 +224,12 @@ class AbstractPromptBuyerSerializer(serializers.ModelSerializer):
         if self.validated_data:
             prompt_params = self.validated_data.pop(  # type: ignore
                 'prompt_params', {}) or {}
-
-        outputModel = instance.generate(**prompt_params, **self.validated_data)
+        user = self.context['request'].user
+        outputModel = instance.generate(
+            user,
+            **prompt_params,
+            **self.validated_data
+        )
         return PromptOutputSerializer(outputModel).data
 
 

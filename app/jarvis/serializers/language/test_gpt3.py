@@ -155,6 +155,9 @@ class GPT3PromptBuyerSerializerTest(TestCase):
         self.prompt = GPT3PromptModel.objects.create(
             **self.prompt_data
         )
+        self.request = type('Request', (object,), {
+            'user': self.user
+        })
 
     def test_generate(self):
         data = {
@@ -162,7 +165,8 @@ class GPT3PromptBuyerSerializerTest(TestCase):
         }
         serializer = GPT3PromptBuyerSerializer(
             instance=self.prompt,
-            data=data
+            data=data,
+            context={'request': self.request}
         )
         self.assertTrue(serializer.is_valid())
         with mock.patch.object(GPT3PromptModel, 'generate') as mock_generate:
@@ -180,6 +184,8 @@ class GPT3PromptBuyerSerializerTest(TestCase):
             )
             serializedOutput = serializer.generate()
             self.assertEqual(serializedOutput["output"], 'test output 1')
+            request = serializer.context['request']
             mock_generate.assert_called_once_with(
+                request.user,
                 **data["prompt_params"],
             )
