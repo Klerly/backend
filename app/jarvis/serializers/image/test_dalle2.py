@@ -55,7 +55,8 @@ class Dalle2PromptSellerSerializerTest(TestCase):
             input={'prompt': 'test prompt 1'},
             output='https://out.put/1/',
             cost=0.0,
-            model_snapshot={}
+            model_snapshot={"description": "test description"}
+
         )
         self.request = type('Request', (object,), {
             'user': self.user
@@ -181,7 +182,8 @@ class Dalle2PromptBuyerSerializerTest(TestCase):
                 model_name="fake-name",
                 model_input={},
                 model_user=self.user,
-                model_snapshot={}
+                model_snapshot={"description": "test description"}
+
             )
             serializedOutput = serializer.generate()
             self.assertEqual(serializedOutput["output"], 'test output 1')
@@ -214,7 +216,8 @@ class Dalle2PromptBuyerSerializerTest(TestCase):
                 model_name="fake-name",
                 model_input={},
                 model_user=self.user,
-                model_snapshot={}
+                model_snapshot={"description": "test description"}
+
             )
             serializedOutput = serializer.generate()
             self.assertEqual(serializedOutput["output"], 'test output 1')

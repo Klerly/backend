@@ -4,10 +4,11 @@ from jarvis.models import (
     PromptOutputModel
 )
 from typing import List, Type, Dict, Union,Any
-from account.models import User
+from account.models import User, Seller
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.fields import empty
 from jarvis.serializers.output import PromptOutputSerializer
+from account.serializers.user import PublicSellerSerializer
 
 class AbstractPromptSellerSerializer(serializers.ModelSerializer):
     is_seller_active = serializers.SerializerMethodField()
@@ -119,6 +120,7 @@ class AbstractPromptSellerSerializer(serializers.ModelSerializer):
 
 
 class AbstractPromptBuyerSerializer(serializers.ModelSerializer):
+    seller = serializers.SerializerMethodField()
     prompt_params = serializers.JSONField(
         required=False,
         write_only=True
@@ -136,6 +138,7 @@ class AbstractPromptBuyerSerializer(serializers.ModelSerializer):
             'icon',
             'type',
             'examples',
+            'seller',
             'template_params',
 
         )
@@ -204,6 +207,10 @@ class AbstractPromptBuyerSerializer(serializers.ModelSerializer):
             )
 
         super().__init__(instance, data, **kwargs)
+
+    def get_seller(self, obj: AbstractPromptModel):
+        seller: Seller = obj.user.seller_profile
+        return PublicSellerSerializer(seller).data
 
     def validate_prompt_params(self, params: dict):
         """ Validate the prompt field

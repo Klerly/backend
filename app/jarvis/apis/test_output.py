@@ -39,7 +39,8 @@ class PromptOutputTestCase(APITestCase):
             cost=0.0,
             type=AbstractPromptModel.Types.TEXT,
             model_user=self.user,
-            model_snapshot={}
+            model_snapshot={"description": "test description"}
+
         )
 
         self.list_url = reverse("jarvis:prompt-output-list")
