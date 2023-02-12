@@ -121,6 +121,7 @@ class AbstractPromptModelTest(TestCase):
                 icon="https://www.google.com",
                 heading="Sample Heading",
                 description="Sample Description",
+                # it fails because of the invalid whitespace in the template
                 template="""
                 This is a sample template
                 Generate a business name acronym: {business_name}
@@ -140,7 +141,7 @@ class AbstractPromptModelTest(TestCase):
                 user=self.user
             )
         self.assertTrue(
-            "The template parameter \"business_type\" is missing curly braces" in str(
+            "The template parameter \" business_type \" has an invalid white space" in str(
                 context.exception)
         )
 
@@ -199,6 +200,24 @@ class AbstractPromptModelTest(TestCase):
             )
         self.assertTrue(
             "The template parameter \"business_type\" appears more than once in the template" in str(
+                context.exception)
+        )
+
+    def test_create_invalid_template_6(self):
+        with self.assertRaises(ValidationError) as context:
+            self.concrete_model.objects.create(
+                icon="https://www.google.com",
+                heading="Sample Heading",
+                description="Sample Description",
+                template="""
+                This is a sample template
+                Generate a business name acronym: {business_name}
+                """,
+                template_params=[],
+                user=self.user
+            )
+        self.assertTrue(
+            "is missing the \"business_name\" key" in str(
                 context.exception)
         )
 

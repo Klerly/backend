@@ -54,7 +54,7 @@ class GPT3PromptModel(AbstractPromptModel):
         self._validate_model()
         return super().save(*args, **kwargs)
 
-    def generate(self, **kwargs) -> PromptOutputModel:
+    def generate(self, user, **kwargs) -> PromptOutputModel:
         import openai
         openai.api_key = settings.OPENAI_API_KEY
         prompt = self.get_prompt(**kwargs)
@@ -77,10 +77,9 @@ class GPT3PromptModel(AbstractPromptModel):
         model_snapshot.pop("_state", None)
         model_snapshot["created_at"] = model_snapshot["created_at"].isoformat()
         model_snapshot["updated_at"] = model_snapshot["updated_at"].isoformat()
-
         outputModel = PromptOutputModel.objects.create(
             uid=response["id"],  # type: ignore
-            user=self.user,
+            user=user,
             input=kwargs or None,
             output=output,
             cost=0.0,

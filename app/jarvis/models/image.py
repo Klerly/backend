@@ -27,6 +27,7 @@ class Dalle2PromptModel(AbstractPromptModel):
 
     def generate(
         self,
+        user,
         size: ImageSizes = ImageSizes.MEDIUM,
         **kwargs
     ) -> PromptOutputModel:
@@ -50,7 +51,7 @@ class Dalle2PromptModel(AbstractPromptModel):
         model_snapshot["created_at"] = model_snapshot["created_at"].isoformat()
         model_snapshot["updated_at"] = model_snapshot["updated_at"].isoformat()
         outputModel = PromptOutputModel.objects.create(
-            user=self.user,
+            user=user,
             input=kwargs or None,
             output=output,
             cost=0.0,

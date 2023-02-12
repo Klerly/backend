@@ -156,6 +156,9 @@ class Dalle2PromptBuyerSerializerTest(TestCase):
         self.prompt = Dalle2PromptModel.objects.create(
             **self.prompt_data
         )
+        self.request = type('Request', (object,), {
+            'user': self.user
+        })
 
     def test_generate(self):
         data = {
@@ -163,7 +166,8 @@ class Dalle2PromptBuyerSerializerTest(TestCase):
         }
         serializer = Dalle2PromptBuyerSerializer(
             instance=self.prompt,
-            data=data
+            data=data,
+            context={'request': self.request}
         )
         self.assertTrue(serializer.is_valid())
         with mock.patch.object(Dalle2PromptModel, 'generate') as mock_generate:
@@ -181,7 +185,9 @@ class Dalle2PromptBuyerSerializerTest(TestCase):
             )
             serializedOutput = serializer.generate()
             self.assertEqual(serializedOutput["output"], 'test output 1')
+            request = serializer.context['request']
             mock_generate.assert_called_once_with(
+                request.user,
                 **data.pop("prompt_params"),
                 size=Dalle2PromptModel.ImageSizes.MEDIUM
             )
@@ -193,7 +199,8 @@ class Dalle2PromptBuyerSerializerTest(TestCase):
         }
         serializer = Dalle2PromptBuyerSerializer(
             instance=self.prompt,
-            data=data
+            data=data,
+            context={'request': self.request}
         )
         self.assertTrue(serializer.is_valid())
         with mock.patch.object(Dalle2PromptModel, 'generate') as mock_generate:
@@ -211,7 +218,9 @@ class Dalle2PromptBuyerSerializerTest(TestCase):
             )
             serializedOutput = serializer.generate()
             self.assertEqual(serializedOutput["output"], 'test output 1')
+            request = serializer.context['request']
             mock_generate.assert_called_once_with(
+                request.user,
                 **data.pop("prompt_params"),
                 **data
             )
