@@ -1,5 +1,5 @@
 # backend
-The backend of the app
+The backend of an AI Completion the app (something like copy.ai ) which integrates blockchain payment.
 
 
 Commands To start app
